@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한경 모닝루틴 — {{DATE_DISPLAY}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #0D1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* 헤더 */
+    .header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 5px;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .header-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+      margin-top: 3px;
+    }
+
+    .date-btn {
+      border: 1px solid #00C896;
+      background: transparent;
+      color: #00C896;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 1px;
+    }
+
+    .date-btn:hover { background: rgba(0,200,150,0.1); }
+
+    /* 탭 메뉴 */
+    .tab-bar {
+      display: flex;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      position: sticky;
+      top: 73px;
+      z-index: 99;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #8b949e;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      user-select: none;
+    }
+
+    .tab:hover { color: #c9d1d9; }
+
+    .tab.active {
+      color: #00C896;
+      border-bottom: 2px solid #00C896;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 썸네일 */
+    .thumbnail {
+      display: block;
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      text-decoration: none;
+    }
+
+    .thumbnail-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(0,0,0,0.35);
+    }
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border: 2px solid #00C896;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 16px solid #00C896;
+      margin-left: 3px;
+    }
+
+    /* TODAY'S BRIEF */
+    .brief-block {
+      padding: 16px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 12px;
+    }
+
+    .brief-list { list-style: none; }
+
+    .brief-list li {
+      display: flex;
+      gap: 10px;
+      padding: 7px 0;
+      font-size: 13px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      line-height: 1.5;
+    }
+
+    .brief-list li:last-child { border-bottom: none; }
+
+    .brief-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #00C896;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    /* 뉴스 카운트 바 */
+    .news-count-bar {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 7px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* 아코디언 */
+    .accordion-item { border-bottom: 1px solid #21262d; }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      padding: 13px 16px;
+      cursor: pointer;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .accordion-header:hover { background: #161b22; }
+    .accordion-header.open-header { background: #161b22; }
+
+    .accordion-toggle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      flex-shrink: 0;
+      width: 14px;
+    }
+
+    .accordion-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      border: 1px solid #00C896;
+      padding: 1px 5px;
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+
+    .accordion-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #c9d1d9;
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    /* 책갈피 버튼 */
+    .bookmark-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .bookmark-btn svg {
+      width: 14px;
+      height: 18px;
+      fill: none;
+      stroke: #30363d;
+      stroke-width: 1.5;
+      transition: stroke 0.15s, fill 0.15s;
+    }
+
+    .bookmark-btn.saved svg {
+      fill: #00C896;
+      stroke: #00C896;
+    }
+
+    .bookmark-btn:hover svg { stroke: #00C896; }
+
+    .accordion-body {
+      display: none;
+      padding: 14px 16px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-top: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .accordion-body.open { display: block; }
+
+    /* MY PAGE */
+    .mypage-empty {
+      padding: 48px 16px;
+      text-align: center;
+    }
+
+    .mypage-empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    .mypage-empty-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.8;
+    }
+
+    .mypage-item { border-bottom: 1px solid #21262d; }
+
+    .mypage-item-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mypage-item-header:hover { background: #161b22; }
+    .mypage-item-header.open-header { background: #161b22; }
+
+    .mypage-item-body {
+      display: none;
+      padding: 14px 16px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-top: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .mypage-item-body.open { display: block; }
+
+    .mypage-toggle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      flex-shrink: 0;
+      width: 14px;
+      padding-top: 2px;
+    }
+
+    .mypage-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #8b949e;
+      flex-shrink: 0;
+      padding-top: 2px;
+      min-width: 58px;
+    }
+
+    .mypage-title {
+      font-size: 13px;
+      color: #c9d1d9;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .mypage-bookmark {
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .mypage-bookmark svg {
+      width: 12px;
+      height: 16px;
+      fill: #00C896;
+      stroke: #00C896;
+      stroke-width: 1.5;
+    }
+
+    .mypage-count-bar {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 7px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* 날짜 선택 모달 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: flex-end;
+      z-index: 200;
+    }
+
+    .modal-sheet {
+      background: #161b22;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      border-top: 1px solid #30363d;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #30363d;
+      font-size: 14px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .modal-close {
+      background: none;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    .date-list { list-style: none; }
+
+    .date-list li {
+      padding: 13px 16px;
+      font-size: 13px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .date-list li:hover { background: #0D1117; }
+    .date-list li.today { color: #e6edf3; font-weight: 700; }
+
+    .today-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      border: 1px solid #00C896;
+      color: #00C896;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">KOREA MARKET</div>
+      <div class="header-title">한경 모닝루틴</div>
+      <div class="header-date">{{DATE_DISPLAY}}</div>
+    </div>
+    <button class="date-btn" onclick="openDateModal()">날짜 선택 ▼</button>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('news')">NEWS</div>
+    <div class="tab" onclick="switchTab('mypage')">MY PAGE</div>
+  </div>
+
+  <!-- NEWS 탭 콘텐츠 -->
+  <div class="tab-content active" id="tab-news">
+
+    <a href="https://www.youtube.com/watch?v={{VIDEO_ID}}" target="_blank" class="thumbnail">
+      <img src="https://img.youtube.com/vi/{{VIDEO_ID}}/hqdefault.jpg"
+           alt="{{VIDEO_TITLE}}"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <div class="thumbnail-inner">
+        <div class="play-btn"><div class="play-icon"></div></div>
+      </div>
+    </a>
+
+    <div class="brief-block">
+      <div class="section-label">TODAY'S BRIEF</div>
+      <ul class="brief-list">
+        {{BRIEF_ITEMS}}
+      </ul>
+    </div>
+
+    <div class="news-count-bar">TOTAL {{TOTAL_COUNT}} ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다</div>
+
+    {{NEWS_ITEMS}}
+
+  </div>
+
+  <!-- MY PAGE 탭 콘텐츠 -->
+  <div class="tab-content" id="tab-mypage">
+    <div class="mypage-count-bar" id="mypage-count">SAVED 0 ITEMS</div>
+    <div id="mypage-list">
+      <div class="mypage-empty">
+        <div class="mypage-empty-icon">🔖</div>
+        <div class="mypage-empty-text">저장된 뉴스가 없습니다.<br>NEWS 탭에서 책갈피를 추가해보세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 날짜 선택 모달 -->
+  <div class="modal-overlay" id="date-modal" style="display:none;" onclick="closeDateModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        날짜 선택
+        <button class="modal-close" onclick="closeDateModal()">✕ 닫기</button>
+      </div>
+      <ul class="date-list">
+        <li class="today">
+          {{DATE_DISPLAY}} — 오늘
+          <span class="today-badge">TODAY</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://bqzuildljlkstlfvmtpz.supabase.co',
+      'sb_publishable_SfF7wId0dgskpSQvkt85zw_-QmMpNoI'
+    );
+
+    const bookmarks = {};
+
+    // ── 날짜 모달 ─────────────────────────────────────────
+    window.openDateModal = function() {
+      document.getElementById('date-modal').style.display = 'flex';
+    };
+
+    window.closeDateModal = function(event) {
+      if (!event || event.target === document.getElementById('date-modal')) {
+        document.getElementById('date-modal').style.display = 'none';
+      }
+    };
+
+    // ── 탭 전환 ───────────────────────────────────────────
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'news') || (i === 1 && tab === 'mypage'));
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    };
+
+    // ── 아코디언 ──────────────────────────────────────────
+    window.toggle = function(header) {
+      const body   = header.nextElementSibling;
+      const icon   = header.querySelector('.accordion-toggle');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      icon.textContent = isOpen ? '▶' : '▼';
+      header.classList.toggle('open-header', !isOpen);
+    };
+
+    // ── MY PAGE 렌더링 ────────────────────────────────────
+    function renderMyPage() {
+      const saved = Object.entries(bookmarks);
+      const list  = document.getElementById('mypage-list');
+      const count = document.getElementById('mypage-count');
+      count.textContent = `SAVED ${saved.length} ITEMS`;
+
+      if (saved.length === 0) {
+        list.innerHTML = `
+          <div class="mypage-empty">
+            <div class="mypage-empty-icon">🔖</div>
+            <div class="mypage-empty-text">저장된 뉴스가 없습니다.<br>NEWS 탭에서 책갈피를 추가해보세요.</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = saved.map(([title, { content, news_date }]) => `
+        <div class="mypage-item">
+          <div class="mypage-item-header" onclick="toggleMypageItem(this)">
+            <span class="mypage-toggle">▶</span>
+            <span class="mypage-date">${news_date}</span>
+            <span class="mypage-title">${title}</span>
+            <span class="mypage-bookmark">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </span>
+          </div>
+          <div class="mypage-item-body">${content}</div>
+        </div>`).join('');
+    }
+
+    window.toggleMypageItem = function(header) {
+      const body   = header.nextElementSibling;
+      const toggle = header.querySelector('.mypage-toggle');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      toggle.textContent = isOpen ? '▶' : '▼';
+      header.classList.toggle('open-header', !isOpen);
+    };
+
+    // ── 책갈피 토글 ───────────────────────────────────────
+    window.toggleBookmark = async function(event, btn, title) {
+      event.stopPropagation();
+      const isSaved = btn.classList.toggle('saved');
+
+      if (isSaved) {
+        const body     = btn.closest('.accordion-item').querySelector('.accordion-body');
+        const content  = body ? body.innerHTML.trim() : '';
+        const newsDate = new Date().toISOString().slice(0, 10);
+
+        const { data, error } = await supabase
+          .from('bookmarks')
+          .insert({ title, content, news_date: newsDate })
+          .select('id')
+          .single();
+
+        if (error) { console.error('저장 실패:', error); btn.classList.remove('saved'); return; }
+        bookmarks[title] = { content, news_date: newsDate.slice(5), db_id: data.id };
+      } else {
+        const entry = bookmarks[title];
+        if (entry?.db_id) {
+          const { error } = await supabase.from('bookmarks').delete().eq('id', entry.db_id);
+          if (error) { console.error('삭제 실패:', error); btn.classList.add('saved'); return; }
+        }
+        delete bookmarks[title];
+      }
+      renderMyPage();
+    };
+
+    // ── 초기 로드 ─────────────────────────────────────────
+    async function loadBookmarks() {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error('불러오기 실패:', error); return; }
+
+      data.forEach(row => {
+        bookmarks[row.title] = {
+          content:   row.content,
+          news_date: row.news_date.slice(5),
+          db_id:     row.id
+        };
+        document.querySelectorAll('.bookmark-btn').forEach(btn => {
+          const header = btn.closest('.accordion-header');
+          if (header?.querySelector('.accordion-title')?.textContent.trim() === row.title) {
+            btn.classList.add('saved');
+          }
+        });
+      });
+      renderMyPage();
+    }
+
+    loadBookmarks();
+  </script>
+
+</body>
+</html>

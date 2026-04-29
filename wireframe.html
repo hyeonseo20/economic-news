@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한경 모닝루틴 — 와이어프레임</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #1a1a1a;
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      padding: 40px 20px 60px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .screen-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .screen-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #8b949e;
+      text-transform: uppercase;
+    }
+
+    .screen {
+      width: 375px;
+      background: #0D1117;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      overflow: hidden;
+      color: #e6edf3;
+      position: relative;
+    }
+
+    .screen-desc {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+      text-align: center;
+      max-width: 375px;
+    }
+
+    /* 헤더 */
+    .header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 5px;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .header-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+      margin-top: 3px;
+    }
+
+    .date-btn {
+      border: 1px solid #00C896;
+      background: transparent;
+      color: #00C896;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 1px;
+    }
+
+    .date-btn:hover { background: rgba(0,200,150,0.1); }
+
+    /* 탭 메뉴 */
+    .tab-bar {
+      display: flex;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #8b949e;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      user-select: none;
+    }
+
+    .tab:hover { color: #c9d1d9; }
+
+    .tab.active {
+      color: #00C896;
+      border-bottom: 2px solid #00C896;
+    }
+
+    /* 탭 콘텐츠 */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 썸네일 */
+    .thumbnail {
+      display: block;
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      text-decoration: none;
+    }
+
+    .thumbnail-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border: 2px solid #00C896;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 16px solid #00C896;
+      margin-left: 3px;
+    }
+
+    .thumbnail-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #8b949e;
+      letter-spacing: 1px;
+    }
+
+    /* TODAY'S BRIEF */
+    .brief-block {
+      padding: 16px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 12px;
+    }
+
+    .brief-list { list-style: none; }
+
+    .brief-list li {
+      display: flex;
+      gap: 10px;
+      padding: 7px 0;
+      font-size: 13px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      line-height: 1.5;
+    }
+
+    .brief-list li:last-child { border-bottom: none; }
+
+    .brief-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #00C896;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    /* 뉴스 카운트 바 */
+    .news-count-bar {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 7px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* 아코디언 */
+    .accordion-item { border-bottom: 1px solid #21262d; }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      padding: 13px 16px;
+      cursor: pointer;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .accordion-header:hover { background: #161b22; }
+    .accordion-header.open-header { background: #161b22; }
+
+    .accordion-toggle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      flex-shrink: 0;
+      width: 14px;
+    }
+
+    .accordion-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      border: 1px solid #00C896;
+      padding: 1px 5px;
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+
+    .accordion-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #c9d1d9;
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    /* 책갈피 버튼 */
+    .bookmark-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .bookmark-btn svg {
+      width: 14px;
+      height: 18px;
+      fill: none;
+      stroke: #30363d;
+      stroke-width: 1.5;
+      transition: stroke 0.15s, fill 0.15s;
+    }
+
+    .bookmark-btn.saved svg {
+      fill: #00C896;
+      stroke: #00C896;
+    }
+
+    .bookmark-btn:hover svg { stroke: #00C896; }
+
+    .accordion-body {
+      display: none;
+      padding: 14px 16px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-top: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .accordion-body.open { display: block; }
+
+    /* MY PAGE */
+    .mypage-empty {
+      padding: 48px 16px;
+      text-align: center;
+    }
+
+    .mypage-empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    .mypage-empty-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.8;
+    }
+
+    .mypage-item { border-bottom: 1px solid #21262d; }
+
+    .mypage-item-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mypage-item-header:hover { background: #161b22; }
+    .mypage-item-header.open-header { background: #161b22; }
+
+    .mypage-item-body {
+      display: none;
+      padding: 14px 16px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-top: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .mypage-item-body.open { display: block; }
+
+    .mypage-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #8b949e;
+      flex-shrink: 0;
+      padding-top: 2px;
+      min-width: 60px;
+    }
+
+    .mypage-title {
+      font-size: 13px;
+      color: #c9d1d9;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .mypage-bookmark {
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .mypage-bookmark svg {
+      width: 12px;
+      height: 16px;
+      fill: #00C896;
+      stroke: #00C896;
+      stroke-width: 1.5;
+    }
+
+    .mypage-count-bar {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 7px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* 날짜 선택 모달 */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .modal-sheet {
+      background: #161b22;
+      width: 100%;
+      border-top: 1px solid #30363d;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #30363d;
+      font-size: 14px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .modal-close {
+      background: none;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    .date-list { list-style: none; }
+
+    .date-list li {
+      padding: 13px 16px;
+      font-size: 13px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .date-list li:hover { background: #0D1117; }
+    .date-list li.today { color: #e6edf3; font-weight: 700; }
+
+    .today-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      border: 1px solid #00C896;
+      color: #00C896;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+    }
+
+    .screen.modal-screen { position: relative; }
+  </style>
+</head>
+<body>
+
+  <!-- ── 화면 1: NEWS 탭 (인터랙티브) ── -->
+  <div class="screen-wrapper">
+    <div class="screen-label">SCREEN 1 — NEWS 탭 (실제 동작)</div>
+    <div class="screen" id="screen1">
+
+      <div class="header">
+        <div>
+          <div class="header-eyebrow">KOREA MARKET</div>
+          <div class="header-title">한경 모닝루틴</div>
+          <div class="header-date">2026-04-29 TUE</div>
+        </div>
+        <button class="date-btn" onclick="openDateModal()">날짜 선택 ▼</button>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('screen1','news')">NEWS</div>
+        <div class="tab" onclick="switchTab('screen1','mypage')">MY PAGE</div>
+      </div>
+
+      <!-- NEWS 콘텐츠 -->
+      <div class="tab-content active" id="screen1-news">
+
+        <a href="https://www.youtube.com/watch?v=z3aDD7OryE8" target="_blank" class="thumbnail">
+          <img src="https://img.youtube.com/vi/z3aDD7OryE8/hqdefault.jpg"
+               alt="한국경제신문 30분 만에 읽기 | 20260429"
+               style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+          <div class="thumbnail-inner" style="background:rgba(0,0,0,0.35);">
+            <div class="play-btn"><div class="play-icon"></div></div>
+            <span class="thumbnail-label">한국경제신문 30분 만에 읽기 | 20260429</span>
+          </div>
+        </a>
+
+        <div class="brief-block">
+          <div class="section-label">TODAY'S BRIEF</div>
+          <ul class="brief-list">
+            <li><span class="brief-num">01</span> 미 연준 금리 동결, 시장 안도 반응</li>
+            <li><span class="brief-num">02</span> 삼성전자 1분기 영업이익 6.6조 기록</li>
+            <li><span class="brief-num">03</span> 원달러 환율 1,380원대 유지</li>
+          </ul>
+        </div>
+
+        <div class="news-count-bar">TOTAL 5 ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다</div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">01</span>
+            <span class="accordion-title">미 연준 금리 동결, 시장 안도 반응</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, '미 연준 금리 동결, 시장 안도 반응')">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">
+            연방준비제도는 28일(현지 시간) FOMC 회의를 열고 기준금리를 현행 5.25~5.50%로 동결하기로 결정했다. 파월 의장은 "인플레이션이 여전히 목표치를 상회한다"고 밝혔다.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">02</span>
+            <span class="accordion-title">삼성전자 1분기 영업이익 6.6조 기록</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, '삼성전자 1분기 영업이익 6.6조 기록')">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">
+            삼성전자는 29일 올해 1분기 영업이익이 6.6조 원으로 집계됐다고 발표했다. 이는 전분기 대비 12% 증가한 수치로, 반도체 부문 회복세가 주효했다.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">03</span>
+            <span class="accordion-title">원달러 환율 1,380원대 유지</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, '원달러 환율 1,380원대 유지')">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">내용 펼쳐짐</div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">04</span>
+            <span class="accordion-title">국내 소비자물가 3개월 연속 둔화</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, '국내 소비자물가 3개월 연속 둔화')">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">내용 펼쳐짐</div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">05</span>
+            <span class="accordion-title">한국은행 기준금리 동결 전망 우세</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, '한국은행 기준금리 동결 전망 우세')">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">내용 펼쳐짐</div>
+        </div>
+
+      </div>
+
+      <!-- MY PAGE 콘텐츠 -->
+      <div class="tab-content" id="screen1-mypage">
+        <div class="mypage-count-bar" id="screen1-mypage-count">SAVED 0 ITEMS</div>
+        <div id="screen1-mypage-list">
+          <div class="mypage-empty">
+            <div class="mypage-empty-icon">🔖</div>
+            <div class="mypage-empty-text">저장된 뉴스가 없습니다.<br>NEWS 탭에서 책갈피를 추가해보세요.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 날짜 선택 모달 (동적) -->
+      <div class="modal-overlay" id="date-modal" style="display:none;" onclick="closeDateModal(event)">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            날짜 선택
+            <button class="modal-close" onclick="closeDateModal()">✕ 닫기</button>
+          </div>
+          <ul class="date-list">
+            <li class="today">2026년 4월 29일 (화) — 오늘<span class="today-badge">TODAY</span></li>
+            <li onclick="closeDateModal()">2026년 4월 28일 (월)</li>
+            <li onclick="closeDateModal()">2026년 4월 25일 (금)</li>
+            <li onclick="closeDateModal()">2026년 4월 24일 (목)</li>
+            <li onclick="closeDateModal()">2026년 4월 23일 (수)</li>
+            <li onclick="closeDateModal()">2026년 4월 22일 (화)</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <div class="screen-desc">* 탭 전환 · 아코디언 · 책갈피 · 날짜 선택 모두 실제 동작</div>
+  </div>
+
+
+  <!-- ── 화면 2: MY PAGE 탭 (저장 항목 있는 상태) ── -->
+  <div class="screen-wrapper">
+    <div class="screen-label">SCREEN 2 — MY PAGE 탭 (저장 항목 있는 상태)</div>
+    <div class="screen">
+
+      <div class="header">
+        <div>
+          <div class="header-eyebrow">KOREA MARKET</div>
+          <div class="header-title">한경 모닝루틴</div>
+          <div class="header-date">2026-04-29 TUE</div>
+        </div>
+        <button class="date-btn">날짜 선택 ▼</button>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab">NEWS</div>
+        <div class="tab active">MY PAGE</div>
+      </div>
+
+      <div class="mypage-count-bar">SAVED 3 ITEMS</div>
+
+      <!-- 접힌 항목 -->
+      <div class="mypage-item">
+        <div class="mypage-item-header">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#00C896;flex-shrink:0;width:14px;">▶</span>
+          <span class="mypage-date">04-29</span>
+          <span class="mypage-title">미 연준 금리 동결, 시장 안도 반응</span>
+          <span class="mypage-bookmark"><svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg></span>
+        </div>
+        <div class="mypage-item-body"></div>
+      </div>
+
+      <!-- 펼쳐진 항목 -->
+      <div class="mypage-item">
+        <div class="mypage-item-header open-header">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#00C896;flex-shrink:0;width:14px;">▼</span>
+          <span class="mypage-date">04-29</span>
+          <span class="mypage-title">삼성전자 1분기 영업이익 6.6조 기록</span>
+          <span class="mypage-bookmark"><svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg></span>
+        </div>
+        <div class="mypage-item-body open">
+          삼성전자는 29일 올해 1분기 영업이익이 6.6조 원으로 집계됐다고 발표했다. 이는 전분기 대비 12% 증가한 수치로, 반도체 부문 회복세가 주효했다.
+        </div>
+      </div>
+
+      <!-- 접힌 항목 -->
+      <div class="mypage-item">
+        <div class="mypage-item-header">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#00C896;flex-shrink:0;width:14px;">▶</span>
+          <span class="mypage-date">04-28</span>
+          <span class="mypage-title">한미 통화스와프 재개 논의 본격화</span>
+          <span class="mypage-bookmark"><svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg></span>
+        </div>
+        <div class="mypage-item-body"></div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── 화면 3: 날짜 선택 모달 ── -->
+  <div class="screen-wrapper">
+    <div class="screen-label">SCREEN 3 — 날짜 선택 화면</div>
+    <div class="screen modal-screen">
+
+      <div style="filter: blur(1px) opacity(0.35); pointer-events:none;">
+        <div class="header">
+          <div>
+            <div class="header-eyebrow">KOREA MARKET</div>
+            <div class="header-title">한경 모닝루틴</div>
+            <div class="header-date">2026-04-29 TUE</div>
+          </div>
+          <button class="date-btn">날짜 선택 ▼</button>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active">NEWS</div>
+          <div class="tab">MY PAGE</div>
+        </div>
+        <div class="brief-block">
+          <div class="section-label">TODAY'S BRIEF</div>
+          <ul class="brief-list">
+            <li><span class="brief-num">01</span> 미 연준 금리 동결, 시장 안도 반응</li>
+            <li><span class="brief-num">02</span> 삼성전자 1분기 영업이익 6.6조 기록</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-overlay">
+        <div class="modal-sheet">
+          <div class="modal-header">
+            날짜 선택
+            <button class="modal-close">✕ 닫기</button>
+          </div>
+          <ul class="date-list">
+            <li class="today">
+              2026년 4월 29일 (화) — 오늘
+              <span class="today-badge">TODAY</span>
+            </li>
+            <li>2026년 4월 28일 (월)</li>
+            <li>2026년 4월 25일 (금)</li>
+            <li>2026년 4월 24일 (목)</li>
+            <li>2026년 4월 23일 (수)</li>
+            <li>2026년 4월 22일 (화)</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://bqzuildljlkstlfvmtpz.supabase.co',
+      'sb_publishable_SfF7wId0dgskpSQvkt85zw_-QmMpNoI'
+    );
+
+    // 메모리 캐시 (title → {content, news_date, db_id})
+    const bookmarks = {};
+
+    // ── 날짜 모달 ─────────────────────────
+    window.openDateModal = function() {
+      document.getElementById('date-modal').style.display = 'flex';
+    };
+
+    window.closeDateModal = function(event) {
+      if (!event || event.target === document.getElementById('date-modal') || event.currentTarget === document.querySelector('.modal-close')) {
+        document.getElementById('date-modal').style.display = 'none';
+      }
+    };
+
+    // ── 아코디언 ──────────────────────────
+    window.toggle = function(header) {
+      const body = header.nextElementSibling;
+      const icon = header.querySelector('.accordion-toggle');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      icon.textContent = isOpen ? '▶' : '▼';
+      header.classList.toggle('open-header', !isOpen);
+    };
+
+    // ── 탭 전환 ───────────────────────────
+    window.switchTab = function(screenId, tab) {
+      const screen = document.getElementById(screenId);
+      screen.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'news') || (i === 1 && tab === 'mypage'));
+      });
+      screen.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(`${screenId}-${tab}`).classList.add('active');
+    };
+
+    // ── MY PAGE 렌더링 ────────────────────
+    function renderMyPage() {
+      const saved = Object.entries(bookmarks);
+      const list  = document.getElementById('screen1-mypage-list');
+      const count = document.getElementById('screen1-mypage-count');
+      count.textContent = `SAVED ${saved.length} ITEMS`;
+
+      if (saved.length === 0) {
+        list.innerHTML = `
+          <div class="mypage-empty">
+            <div class="mypage-empty-icon">🔖</div>
+            <div class="mypage-empty-text">저장된 뉴스가 없습니다.<br>NEWS 탭에서 책갈피를 추가해보세요.</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = saved.map(([title, { content, news_date }]) => `
+        <div class="mypage-item">
+          <div class="mypage-item-header" onclick="toggleMypageItem(this)">
+            <span class="accordion-toggle" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#00C896;flex-shrink:0;width:14px;">▶</span>
+            <span class="mypage-date">${news_date}</span>
+            <span class="mypage-title">${title}</span>
+            <span class="mypage-bookmark">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </span>
+          </div>
+          <div class="mypage-item-body">${content}</div>
+        </div>`).join('');
+    }
+
+    window.toggleMypageItem = function(header) {
+      const body   = header.nextElementSibling;
+      const toggle = header.querySelector('.accordion-toggle');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      toggle.textContent = isOpen ? '▶' : '▼';
+      header.classList.toggle('open-header', !isOpen);
+    };
+
+    // ── 책갈피 토글 (Supabase 연동) ───────
+    window.toggleBookmark = async function(event, btn, title) {
+      event.stopPropagation();
+      const isSaved = btn.classList.toggle('saved');
+
+      if (isSaved) {
+        const body     = btn.closest('.accordion-item').querySelector('.accordion-body');
+        const content  = body ? body.innerHTML.trim() : '';
+        const newsDate = new Date().toISOString().slice(0, 10);
+
+        const { data, error } = await supabase
+          .from('bookmarks')
+          .insert({ title, content, news_date: newsDate })
+          .select('id')
+          .single();
+
+        if (error) { console.error('저장 실패:', error); btn.classList.remove('saved'); return; }
+        bookmarks[title] = { content, news_date: newsDate.slice(5), db_id: data.id };
+      } else {
+        const entry = bookmarks[title];
+        if (entry?.db_id) {
+          const { error } = await supabase.from('bookmarks').delete().eq('id', entry.db_id);
+          if (error) { console.error('삭제 실패:', error); btn.classList.add('saved'); return; }
+        }
+        delete bookmarks[title];
+      }
+      renderMyPage();
+    };
+
+    // ── 초기 로드: DB에서 저장된 책갈피 복원 ─
+    async function loadBookmarks() {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error('불러오기 실패:', error); return; }
+
+      data.forEach(row => {
+        bookmarks[row.title] = {
+          content:   row.content,
+          news_date: row.news_date.slice(5),
+          db_id:     row.id
+        };
+        // 책갈피 버튼 활성화
+        document.querySelectorAll('.bookmark-btn').forEach(btn => {
+          const header = btn.closest('.accordion-header');
+          if (header?.querySelector('.accordion-title')?.textContent.trim() === row.title) {
+            btn.classList.add('saved');
+          }
+        });
+      });
+      renderMyPage();
+    }
+
+    loadBookmarks();
+  </script>
+
+</body>
+</html>

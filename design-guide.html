@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>디자인 가이드 — 3안 비교</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a1a;
+      padding: 40px 20px 80px;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .page-title {
+      color: #fff;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+      opacity: 0.6;
+    }
+
+    .guide-grid {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .guide-col {
+      width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .guide-label {
+      color: #aaa;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+
+    /* ══════════════════════════════════
+       안 A — 미니멀 모노크롬
+    ══════════════════════════════════ */
+    .guide-a {
+      background: #ffffff;
+      border: 1px solid #ddd;
+    }
+
+    .ga-header {
+      background: #111;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .ga-header-eyebrow {
+      font-size: 10px;
+      letter-spacing: 3px;
+      opacity: 0.5;
+      margin-bottom: 6px;
+    }
+
+    .ga-header-title {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .ga-header-date {
+      font-size: 12px;
+      opacity: 0.5;
+      margin-top: 4px;
+    }
+
+    .ga-section { padding: 20px; border-bottom: 1px solid #eee; }
+
+    .ga-section-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      font-weight: 700;
+      color: #999;
+      margin-bottom: 14px;
+    }
+
+    .ga-brief-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f0;
+      line-height: 1.5;
+    }
+    .ga-brief-item:last-child { border-bottom: none; }
+    .ga-num { color: #bbb; font-size: 12px; padding-top: 1px; }
+
+    .ga-accordion-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .ga-accordion-row.open { background: #f8f8f8; }
+    .ga-arrow { font-size: 10px; color: #999; }
+    .ga-tag {
+      font-size: 10px;
+      background: #111;
+      color: #fff;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .ga-body {
+      padding: 14px 20px 16px 40px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+      border-bottom: 1px solid #eee;
+      background: #f8f8f8;
+    }
+
+    .ga-share {
+      padding: 16px 20px;
+    }
+
+    .ga-share-btn {
+      width: 100%;
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    /* 컬러 팔레트 */
+    .palette { display: flex; gap: 0; }
+    .swatch { height: 40px; flex: 1; }
+    .palette-labels {
+      display: flex;
+      gap: 0;
+      border-top: 1px solid #eee;
+    }
+    .swatch-label {
+      flex: 1;
+      font-size: 9px;
+      color: #999;
+      padding: 4px 6px;
+      text-align: center;
+      border-right: 1px solid #eee;
+    }
+    .swatch-label:last-child { border-right: none; }
+
+    .type-sample { padding: 16px 20px; border-bottom: 1px solid #eee; }
+    .type-row { margin-bottom: 10px; }
+    .type-name { font-size: 9px; color: #aaa; letter-spacing: 2px; display: block; margin-bottom: 3px; }
+
+    /* 가이드 섹션 구분선 */
+    .guide-divider {
+      padding: 10px 20px;
+      background: #f5f5f5;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #999;
+      border-bottom: 1px solid #eee;
+      border-top: 1px solid #eee;
+    }
+
+
+    /* ══════════════════════════════════
+       안 B — 파이낸셜 세리프 (FT 스타일)
+    ══════════════════════════════════ */
+    .guide-b {
+      background: #FDF6EC;
+      border: 1px solid #e8d9c0;
+    }
+
+    .gb-header {
+      background: #C8102E;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .gb-header-eyebrow {
+      font-size: 10px;
+      letter-spacing: 3px;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+
+    .gb-header-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .gb-header-date {
+      font-size: 12px;
+      opacity: 0.65;
+      margin-top: 4px;
+    }
+
+    .gb-section { padding: 18px 20px; border-bottom: 1px solid #e8d9c0; }
+
+    .gb-section-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      font-weight: 700;
+      color: #C8102E;
+      margin-bottom: 12px;
+    }
+
+    .gb-brief-item {
+      display: flex;
+      gap: 10px;
+      padding: 7px 0;
+      font-family: 'Noto Serif KR', serif;
+      font-size: 14px;
+      border-bottom: 1px solid #ead9c0;
+      line-height: 1.6;
+    }
+    .gb-brief-item:last-child { border-bottom: none; }
+    .gb-num { color: #C8102E; font-size: 12px; font-weight: 700; padding-top: 1px; }
+
+    .gb-accordion-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px;
+      border-bottom: 1px solid #e8d9c0;
+      font-family: 'Noto Serif KR', serif;
+      font-size: 14px;
+    }
+
+    .gb-accordion-row.open { background: #f5ebe0; }
+    .gb-arrow { font-size: 10px; color: #C8102E; }
+    .gb-tag {
+      font-size: 10px;
+      background: #C8102E;
+      color: #fff;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .gb-body {
+      padding: 14px 20px 16px 40px;
+      font-family: 'Noto Serif KR', serif;
+      font-size: 13px;
+      color: #5a4a3a;
+      line-height: 1.9;
+      border-bottom: 1px solid #e8d9c0;
+      background: #f5ebe0;
+    }
+
+    .gb-share { padding: 16px 20px; }
+
+    .gb-share-btn {
+      width: 100%;
+      background: #C8102E;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    /* B 팔레트 */
+    .gb-divider {
+      padding: 10px 20px;
+      background: #f5ebe0;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #9a7a5a;
+      border-bottom: 1px solid #e8d9c0;
+      border-top: 1px solid #e8d9c0;
+    }
+
+    .gb-type-sample { padding: 16px 20px; border-bottom: 1px solid #e8d9c0; background: #FDF6EC; }
+    .gb-type-name { font-size: 9px; color: #baa; letter-spacing: 2px; display: block; margin-bottom: 3px; }
+    .gb-type-row { margin-bottom: 10px; }
+
+
+    /* ══════════════════════════════════
+       안 C — 다크 핀테크
+    ══════════════════════════════════ */
+    .guide-c {
+      background: #0D1117;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+    }
+
+    .gc-header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 20px;
+    }
+
+    .gc-header-eyebrow {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .gc-header-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .gc-header-date {
+      font-size: 12px;
+      color: #8b949e;
+      margin-top: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .gc-section { padding: 18px 20px; border-bottom: 1px solid #21262d; }
+
+    .gc-section-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      font-weight: 700;
+      color: #00C896;
+      margin-bottom: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .gc-brief-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #21262d;
+      line-height: 1.6;
+      color: #c9d1d9;
+    }
+    .gc-brief-item:last-child { border-bottom: none; }
+    .gc-num {
+      color: #00C896;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      padding-top: 2px;
+    }
+
+    .gc-accordion-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px;
+      border-bottom: 1px solid #21262d;
+      font-size: 13px;
+      color: #c9d1d9;
+    }
+
+    .gc-accordion-row.open { background: #161b22; }
+    .gc-arrow { font-size: 10px; color: #00C896; font-family: 'IBM Plex Mono', monospace; }
+    .gc-tag {
+      font-size: 10px;
+      border: 1px solid #00C896;
+      color: #00C896;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .gc-body {
+      padding: 14px 20px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-bottom: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .gc-share { padding: 16px 20px; }
+
+    .gc-share-btn {
+      width: 100%;
+      background: #00C896;
+      color: #0D1117;
+      border: none;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    .gc-divider {
+      padding: 10px 20px;
+      background: #161b22;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #8b949e;
+      border-bottom: 1px solid #21262d;
+      border-top: 1px solid #21262d;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .gc-type-sample { padding: 16px 20px; border-bottom: 1px solid #21262d; }
+    .gc-type-name { font-size: 9px; color: #8b949e; letter-spacing: 2px; display: block; margin-bottom: 3px; font-family: 'IBM Plex Mono', monospace; }
+    .gc-type-row { margin-bottom: 10px; }
+
+    .gc-swatch-label { color: #8b949e !important; border-right-color: #21262d !important; }
+    .gc-palette-labels { border-top-color: #21262d !important; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Economic News App — Design Guide 3안 비교</p>
+
+<div class="guide-grid">
+
+
+  <!-- ══ 안 A ══ -->
+  <div class="guide-col">
+    <p class="guide-label">안 A — 미니멀 모노크롬</p>
+    <div class="guide-a">
+
+      <!-- 컬러 팔레트 -->
+      <div class="guide-divider">COLOR PALETTE</div>
+      <div class="palette">
+        <div class="swatch" style="background:#111111;"></div>
+        <div class="swatch" style="background:#555555;"></div>
+        <div class="swatch" style="background:#999999;"></div>
+        <div class="swatch" style="background:#eeeeee;"></div>
+        <div class="swatch" style="background:#ffffff; border-right:1px solid #eee;"></div>
+      </div>
+      <div class="palette-labels">
+        <div class="swatch-label">#111</div>
+        <div class="swatch-label">#555</div>
+        <div class="swatch-label">#999</div>
+        <div class="swatch-label">#eee</div>
+        <div class="swatch-label">#fff</div>
+      </div>
+
+      <!-- 타이포그래피 -->
+      <div class="guide-divider">TYPOGRAPHY</div>
+      <div class="type-sample">
+        <div class="type-row">
+          <span class="type-name">HEADLINE / Noto Sans KR 900</span>
+          <div style="font-size:22px; font-weight:900; letter-spacing:-0.5px; color:#111;">한경 모닝루틴</div>
+        </div>
+        <div class="type-row">
+          <span class="type-name">SECTION LABEL / 10px 700 letter-spacing 3px</span>
+          <div style="font-size:10px; font-weight:700; letter-spacing:3px; color:#999;">TODAY'S BRIEF</div>
+        </div>
+        <div class="type-row">
+          <span class="type-name">BODY / Noto Sans KR 400 14px</span>
+          <div style="font-size:14px; color:#333; line-height:1.7;">미 연준이 기준금리를 동결했다.</div>
+        </div>
+        <div class="type-row" style="margin-bottom:0;">
+          <span class="type-name">SUB / 13px color #555</span>
+          <div style="font-size:13px; color:#555; line-height:1.8;">연방준비제도는 이번 회의에서 금리를 현행 수준으로 유지하기로 했다.</div>
+        </div>
+      </div>
+
+      <!-- 화면 미리보기 -->
+      <div class="guide-divider">SCREEN PREVIEW</div>
+
+      <div class="ga-header">
+        <div class="ga-header-eyebrow">KOREA MARKET</div>
+        <div class="ga-header-title">한경 모닝루틴</div>
+        <div class="ga-header-date">2026년 4월 29일 (화)</div>
+      </div>
+
+      <a href="https://www.youtube.com/playlist?list=PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO" target="_blank" style="display:block; position:relative; width:100%; padding-top:56.25%; background:#222; text-decoration:none; border-bottom:1px solid #eee;">
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+          <div style="width:48px; height:48px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <div style="width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:18px solid #111; margin-left:4px;"></div>
+          </div>
+          <span style="font-size:11px; color:#aaa; letter-spacing:1px;">한국경제신문 30분 만에 읽기</span>
+        </div>
+      </a>
+
+      <div class="ga-section">
+        <div class="ga-section-label">TODAY'S BRIEF</div>
+        <div class="ga-brief-item"><span class="ga-num">①</span> 미 연준 금리 동결, 시장 안도 반응</div>
+        <div class="ga-brief-item"><span class="ga-num">②</span> 삼성전자 1분기 영업이익 6.6조 기록</div>
+        <div class="ga-brief-item"><span class="ga-num">③</span> 원달러 환율 1,380원대 유지</div>
+      </div>
+
+      <div class="ga-accordion-row">
+        <span class="ga-arrow">▶</span>
+        <span class="ga-tag">01</span>
+        <span>미 연준 금리 동결, 시장 안도 반응</span>
+      </div>
+      <div class="ga-accordion-row open">
+        <span class="ga-arrow">▼</span>
+        <span class="ga-tag">02</span>
+        <span>삼성전자 1분기 영업이익 6.6조</span>
+      </div>
+      <div class="ga-body">
+        삼성전자는 29일 1분기 영업이익이 6.6조 원으로 집계됐다고 발표했다. 전분기 대비 12% 증가한 수치로 반도체 부문 회복세가 주효했다.
+      </div>
+      <div class="ga-accordion-row">
+        <span class="ga-arrow">▶</span>
+        <span class="ga-tag">03</span>
+        <span>원달러 환율 1,380원대 유지</span>
+      </div>
+
+      <div class="ga-share">
+        <button class="ga-share-btn">SHARE LINK</button>
+      </div>
+
+      <!-- 분위기 설명 -->
+      <div class="guide-divider">CONCEPT</div>
+      <div style="padding:16px 20px; font-size:13px; color:#555; line-height:1.8; border-bottom:1px solid #eee;">
+        <strong style="color:#111;">블룸버그 터미널 스타일.</strong><br>
+        흑백 대비로 정보 밀도를 높임. 감정 없이 데이터만 전달. 빠른 스캔에 최적화.
+        <br><br>
+        <span style="color:#999;">어울리는 사용자:</span> 정보를 빠르고 건조하게 소비하는 분
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ 안 B ══ -->
+  <div class="guide-col">
+    <p class="guide-label">안 B — 파이낸셜 세리프</p>
+    <div class="guide-b">
+
+      <div class="gb-divider">COLOR PALETTE</div>
+      <div class="palette">
+        <div class="swatch" style="background:#C8102E;"></div>
+        <div class="swatch" style="background:#8B0000;"></div>
+        <div class="swatch" style="background:#5a4a3a;"></div>
+        <div class="swatch" style="background:#FDF6EC;"></div>
+        <div class="swatch" style="background:#f5ebe0; border-right:1px solid #e8d9c0;"></div>
+      </div>
+      <div class="palette-labels" style="border-top-color:#e8d9c0;">
+        <div class="swatch-label" style="color:#baa; border-right-color:#e8d9c0;">#C8102E</div>
+        <div class="swatch-label" style="color:#baa; border-right-color:#e8d9c0;">#8B0000</div>
+        <div class="swatch-label" style="color:#baa; border-right-color:#e8d9c0;">#5a4a3a</div>
+        <div class="swatch-label" style="color:#baa; border-right-color:#e8d9c0;">#FDF6EC</div>
+        <div class="swatch-label" style="color:#baa;">#f5ebe0</div>
+      </div>
+
+      <div class="gb-divider">TYPOGRAPHY</div>
+      <div class="gb-type-sample">
+        <div class="gb-type-row">
+          <span class="gb-type-name">HEADLINE / Noto Serif KR 700</span>
+          <div style="font-family:'Noto Serif KR',serif; font-size:22px; font-weight:700; color:#1a0a00;">한경 모닝루틴</div>
+        </div>
+        <div class="gb-type-row">
+          <span class="gb-type-name">SECTION LABEL / 10px 700 color #C8102E</span>
+          <div style="font-size:10px; font-weight:700; letter-spacing:3px; color:#C8102E;">TODAY'S BRIEF</div>
+        </div>
+        <div class="gb-type-row">
+          <span class="gb-type-name">BODY / Noto Serif KR 400 14px</span>
+          <div style="font-family:'Noto Serif KR',serif; font-size:14px; color:#3a2a1a; line-height:1.8;">미 연준이 기준금리를 동결했다.</div>
+        </div>
+        <div class="gb-type-row" style="margin-bottom:0;">
+          <span class="gb-type-name">SUB / 13px color #5a4a3a</span>
+          <div style="font-family:'Noto Serif KR',serif; font-size:13px; color:#5a4a3a; line-height:1.9;">연방준비제도는 이번 회의에서 금리를 현행 수준으로 유지하기로 했다.</div>
+        </div>
+      </div>
+
+      <div class="gb-divider">SCREEN PREVIEW</div>
+
+      <div class="gb-header">
+        <div class="gb-header-eyebrow">KOREA MARKET</div>
+        <div class="gb-header-title">한경 모닝루틴</div>
+        <div class="gb-header-date">2026년 4월 29일 (화)</div>
+      </div>
+
+      <a href="https://www.youtube.com/playlist?list=PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO" target="_blank" style="display:block; position:relative; width:100%; padding-top:56.25%; background:#3a2a1a; text-decoration:none; border-bottom:1px solid #e8d9c0;">
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+          <div style="width:48px; height:48px; background:#C8102E; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <div style="width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:18px solid #fff; margin-left:4px;"></div>
+          </div>
+          <span style="font-family:'Noto Serif KR',serif; font-size:11px; color:#c8b090; letter-spacing:1px;">한국경제신문 30분 만에 읽기</span>
+        </div>
+      </a>
+
+      <div class="gb-section">
+        <div class="gb-section-label">TODAY'S BRIEF</div>
+        <div class="gb-brief-item"><span class="gb-num">①</span> 미 연준 금리 동결, 시장 안도 반응</div>
+        <div class="gb-brief-item"><span class="gb-num">②</span> 삼성전자 1분기 영업이익 6.6조 기록</div>
+        <div class="gb-brief-item"><span class="gb-num">③</span> 원달러 환율 1,380원대 유지</div>
+      </div>
+
+      <div class="gb-accordion-row">
+        <span class="gb-arrow">▶</span>
+        <span class="gb-tag">01</span>
+        <span>미 연준 금리 동결, 시장 안도 반응</span>
+      </div>
+      <div class="gb-accordion-row open">
+        <span class="gb-arrow">▼</span>
+        <span class="gb-tag">02</span>
+        <span>삼성전자 1분기 영업이익 6.6조</span>
+      </div>
+      <div class="gb-body">
+        삼성전자는 29일 1분기 영업이익이 6.6조 원으로 집계됐다고 발표했다. 전분기 대비 12% 증가한 수치로 반도체 부문 회복세가 주효했다.
+      </div>
+      <div class="gb-accordion-row">
+        <span class="gb-arrow">▶</span>
+        <span class="gb-tag">03</span>
+        <span>원달러 환율 1,380원대 유지</span>
+      </div>
+
+      <div class="gb-share">
+        <button class="gb-share-btn">링크 공유하기</button>
+      </div>
+
+      <div class="gb-divider">CONCEPT</div>
+      <div style="padding:16px 20px; font-size:13px; color:#5a4a3a; line-height:1.8; background:#FDF6EC; border-bottom:1px solid #e8d9c0;">
+        <strong style="color:#3a1a0a;">파이낸셜 타임즈 스타일.</strong><br>
+        크림색 배경 + 세리프 폰트로 신뢰감과 품격. 붉은 포인트가 중요 정보를 강조.
+        <br><br>
+        <span style="color:#baa;">어울리는 사용자:</span> 신문 읽는 느낌을 선호하는 분
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ 안 C ══ -->
+  <div class="guide-col">
+    <p class="guide-label">안 C — 다크 핀테크</p>
+    <div class="guide-c">
+
+      <div class="gc-divider">COLOR PALETTE</div>
+      <div class="palette">
+        <div class="swatch" style="background:#0D1117;"></div>
+        <div class="swatch" style="background:#161b22;"></div>
+        <div class="swatch" style="background:#30363d;"></div>
+        <div class="swatch" style="background:#00C896;"></div>
+        <div class="swatch" style="background:#c9d1d9;"></div>
+      </div>
+      <div class="palette-labels gc-palette-labels" style="border-top-color:#21262d;">
+        <div class="swatch-label gc-swatch-label">#0D1117</div>
+        <div class="swatch-label gc-swatch-label">#161b22</div>
+        <div class="swatch-label gc-swatch-label">#30363d</div>
+        <div class="swatch-label gc-swatch-label">#00C896</div>
+        <div class="swatch-label gc-swatch-label">#c9d1d9</div>
+      </div>
+
+      <div class="gc-divider">TYPOGRAPHY</div>
+      <div class="gc-type-sample">
+        <div class="gc-type-row">
+          <span class="gc-type-name">HEADLINE / Noto Sans KR 700</span>
+          <div style="font-size:22px; font-weight:700; color:#e6edf3;">한경 모닝루틴</div>
+        </div>
+        <div class="gc-type-row">
+          <span class="gc-type-name">SECTION LABEL / IBM Plex Mono 10px #00C896</span>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:3px; color:#00C896;">TODAY'S BRIEF</div>
+        </div>
+        <div class="gc-type-row">
+          <span class="gc-type-name">BODY / Noto Sans KR 400 13px</span>
+          <div style="font-size:13px; color:#c9d1d9; line-height:1.7;">미 연준이 기준금리를 동결했다.</div>
+        </div>
+        <div class="gc-type-row" style="margin-bottom:0;">
+          <span class="gc-type-name">SUB / 13px color #8b949e</span>
+          <div style="font-size:13px; color:#8b949e; line-height:1.8;">연방준비제도는 이번 회의에서 금리를 현행 수준으로 유지하기로 했다.</div>
+        </div>
+      </div>
+
+      <div class="gc-divider">SCREEN PREVIEW</div>
+
+      <div class="gc-header">
+        <div class="gc-header-eyebrow">KOREA MARKET</div>
+        <div class="gc-header-title">한경 모닝루틴</div>
+        <div class="gc-header-date">2026-04-29 TUE</div>
+      </div>
+
+      <a href="https://www.youtube.com/playlist?list=PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO" target="_blank" style="display:block; position:relative; width:100%; padding-top:56.25%; background:#161b22; text-decoration:none; border-bottom:1px solid #21262d;">
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+          <div style="width:48px; height:48px; border:2px solid #00C896; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <div style="width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:18px solid #00C896; margin-left:4px;"></div>
+          </div>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8b949e; letter-spacing:1px;">한국경제신문 30분 만에 읽기</span>
+        </div>
+      </a>
+
+      <div class="gc-section">
+        <div class="gc-section-label">TODAY'S BRIEF</div>
+        <div class="gc-brief-item"><span class="gc-num">01</span> 미 연준 금리 동결, 시장 안도 반응</div>
+        <div class="gc-brief-item"><span class="gc-num">02</span> 삼성전자 1분기 영업이익 6.6조 기록</div>
+        <div class="gc-brief-item"><span class="gc-num">03</span> 원달러 환율 1,380원대 유지</div>
+      </div>
+
+      <div class="gc-accordion-row">
+        <span class="gc-arrow">▶</span>
+        <span class="gc-tag">01</span>
+        <span>미 연준 금리 동결, 시장 안도 반응</span>
+      </div>
+      <div class="gc-accordion-row open">
+        <span class="gc-arrow">▼</span>
+        <span class="gc-tag">02</span>
+        <span>삼성전자 1분기 영업이익 6.6조</span>
+      </div>
+      <div class="gc-body">
+        삼성전자는 29일 1분기 영업이익이 6.6조 원으로 집계됐다고 발표했다. 전분기 대비 12% 증가한 수치로 반도체 부문 회복세가 주효했다.
+      </div>
+      <div class="gc-accordion-row">
+        <span class="gc-arrow">▶</span>
+        <span class="gc-tag">03</span>
+        <span>원달러 환율 1,380원대 유지</span>
+      </div>
+
+      <div class="gc-share">
+        <button class="gc-share-btn">SHARE LINK</button>
+      </div>
+
+      <div class="gc-divider">CONCEPT</div>
+      <div style="padding:16px 20px; font-size:13px; color:#8b949e; line-height:1.8; border-bottom:1px solid #21262d;">
+        <strong style="color:#e6edf3;">GitHub / 핀테크 앱 스타일.</strong><br>
+        다크 배경에 초록 포인트로 데이터 중심 분위기. 모노스페이스 숫자가 정보 구조를 강조.
+        <br><br>
+        <span style="color:#555;">어울리는 사용자:</span> 투자·데이터에 친숙한 20~30대
+      </div>
+    </div>
+  </div>
+
+
+</div>
+</body>
+</html>
