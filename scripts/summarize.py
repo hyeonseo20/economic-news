@@ -8,7 +8,6 @@ import json
 import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
-from youtube_transcript_api import YouTubeTranscriptApi
 import google.generativeai as genai
 import requests
 
@@ -45,25 +44,13 @@ def get_today_video():
     return None
 
 
-def get_transcript(video_id):
-    """영상 자막 추출 (한국어 우선, 없으면 자동생성 자막)"""
-    try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['ko'])
-    except Exception:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-    return ' '.join(t['text'] for t in transcript)
-
-
-def summarize(transcript, video_title):
-    """Gemini AI로 요약 생성 — JSON 반환"""
+def summarize(video_id, video_title):
+    """Gemini AI로 YouTube 영상을 직접 요약 — JSON 반환"""
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    prompt = f"""다음은 한국경제신문 뉴스 영상의 자막입니다.
+    prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
 영상 제목: {video_title}
-
-자막:
-{transcript[:8000]}
 
 아래 JSON 형식으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
@@ -79,9 +66,22 @@ def summarize(transcript, video_title):
 - items: 영상에서 다룬 주요 뉴스 5~10개, content는 2~3문단
 - 모든 내용은 한국어로 작성
 """
-    response = model.generate_content(prompt)
-    text     = response.text.strip()
 
+    response = model.generate_content([
+        {
+            'parts': [
+                {
+                    'file_data': {
+                        'file_uri': f'https://www.youtube.com/watch?v={video_id}',
+                        'mime_type': 'video/mp4'
+                    }
+                },
+                {'text': prompt}
+            ]
+        }
+    ])
+
+    text  = response.text.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
@@ -147,25 +147,21 @@ def send_notification(date):
 def main():
     print('── 한경 모닝루틴 요약 시작 ──────────────')
 
-    print('[1/5] 오늘 영상 확인 중...')
+    print('[1/4] 오늘 영상 확인 중...')
     video = get_today_video()
     if not video:
         print('     오늘 업로드된 영상 없음. 종료합니다.')
         return
     print(f'     발견: {video["title"]} ({video["video_id"]})')
 
-    print('[2/5] 자막 추출 중...')
-    transcript = get_transcript(video['video_id'])
-    print(f'     자막 {len(transcript):,}자 추출 완료')
-
-    print('[3/5] AI 요약 생성 중...')
-    summary = summarize(transcript, video['title'])
+    print('[2/4] AI 요약 생성 중...')
+    summary = summarize(video['video_id'], video['title'])
     print(f'     요약 완료: {len(summary["items"])}개 항목')
 
-    print('[4/5] HTML 생성 중...')
+    print('[3/4] HTML 생성 중...')
     generate_html(video, summary)
 
-    print('[5/5] 푸시 알림 전송 중...')
+    print('[4/4] 푸시 알림 전송 중...')
     send_notification(video['date'])
     print('     완료!')
 
