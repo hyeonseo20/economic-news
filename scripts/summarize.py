@@ -9,12 +9,12 @@ import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
-import anthropic
+from groq import Groq
 import requests
 
 # ── 환경변수 ──────────────────────────────────────────────
-YOUTUBE_API_KEY   = os.environ['YOUTUBE_API_KEY']
-ANTHROPIC_API_KEY = os.environ['ANTHROPIC_API_KEY']
+YOUTUBE_API_KEY = os.environ['YOUTUBE_API_KEY']
+GROQ_API_KEY    = os.environ['GROQ_API_KEY']
 PLAYLIST_ID       = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
 NTFY_TOPIC        = os.environ.get('NTFY_TOPIC', '')
 
@@ -76,14 +76,14 @@ def summarize(video_id, video_title):
 - 모든 내용은 한국어로 작성
 """
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    response = client.messages.create(
-        model='claude-haiku-4-5-20251001',
+    client = Groq(api_key=GROQ_API_KEY)
+    response = client.chat.completions.create(
+        model='llama-3.3-70b-versatile',
         max_tokens=4096,
         messages=[{'role': 'user', 'content': prompt}]
     )
 
-    text  = response.content[0].text.strip()
+    text  = response.choices[0].message.content.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
