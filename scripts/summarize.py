@@ -8,7 +8,7 @@ import json
 import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
-import google.generativeai as genai
+from google import genai
 import requests
 
 # ── 환경변수 ──────────────────────────────────────────────
@@ -46,8 +46,7 @@ def get_today_video():
 
 def summarize(video_id, video_title):
     """Gemini AI로 YouTube 영상을 직접 요약 — JSON 반환"""
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
 영상 제목: {video_title}
@@ -67,19 +66,16 @@ def summarize(video_id, video_title):
 - 모든 내용은 한국어로 작성
 """
 
-    response = model.generate_content([
-        {
-            'parts': [
-                {
-                    'file_data': {
-                        'file_uri': f'https://www.youtube.com/watch?v={video_id}',
-                        'mime_type': 'video/mp4'
-                    }
-                },
-                {'text': prompt}
-            ]
-        }
-    ])
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents=[
+            genai.types.Part.from_uri(
+                file_uri=f'https://www.youtube.com/watch?v={video_id}',
+                mime_type='video/mp4'
+            ),
+            prompt
+        ]
+    )
 
     text  = response.text.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
