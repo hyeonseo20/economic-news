@@ -8,14 +8,15 @@ import json
 import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
-from google import genai
+from youtube_transcript_api import YouTubeTranscriptApi
+import anthropic
 import requests
 
 # ── 환경변수 ──────────────────────────────────────────────
-YOUTUBE_API_KEY = os.environ['YOUTUBE_API_KEY']
-GEMINI_API_KEY  = os.environ['GEMINI_API_KEY']
-PLAYLIST_ID     = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
-NTFY_TOPIC      = os.environ.get('NTFY_TOPIC', '')
+YOUTUBE_API_KEY   = os.environ['YOUTUBE_API_KEY']
+ANTHROPIC_API_KEY = os.environ['ANTHROPIC_API_KEY']
+PLAYLIST_ID       = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
+NTFY_TOPIC        = os.environ.get('NTFY_TOPIC', '')
 
 KST = timezone(timedelta(hours=9))
 DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
@@ -44,12 +45,21 @@ def get_today_video():
     return None
 
 
-def summarize(video_id, video_title):
-    """Gemini AI로 YouTube 영상을 직접 요약 — JSON 반환"""
-    client = genai.Client(api_key=GEMINI_API_KEY)
+def get_transcript(video_id):
+    """YouTube 자막(한국어 우선, 없으면 영어) 텍스트 반환"""
+    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['ko', 'en'])
+    return ' '.join(t['text'] for t in transcript)
 
-    prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
+
+def summarize(video_id, video_title):
+    """Claude AI로 YouTube 자막을 요약 — JSON 반환"""
+    transcript = get_transcript(video_id)
+
+    prompt = f"""다음은 한국경제신문 뉴스 영상의 자막입니다.
 영상 제목: {video_title}
+
+[자막]
+{transcript}
 
 아래 JSON 형식으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
@@ -66,18 +76,14 @@ def summarize(video_id, video_title):
 - 모든 내용은 한국어로 작성
 """
 
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-lite',
-        contents=[
-            genai.types.Part.from_uri(
-                file_uri=f'https://www.youtube.com/watch?v={video_id}',
-                mime_type='video/mp4'
-            ),
-            prompt
-        ]
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    response = client.messages.create(
+        model='claude-haiku-4-5-20251001',
+        max_tokens=4096,
+        messages=[{'role': 'user', 'content': prompt}]
     )
 
-    text  = response.text.strip()
+    text  = response.content[0].text.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')

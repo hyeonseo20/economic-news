@@ -26,9 +26,9 @@ jobs:
 
       - name: 요약 실행
         env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          GEMINI_API_KEY:  ${{ secrets.GEMINI_API_KEY }}
-          NTFY_TOPIC:      ${{ secrets.NTFY_TOPIC }}
+          YOUTUBE_API_KEY:   ${{ secrets.YOUTUBE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NTFY_TOPIC:        ${{ secrets.NTFY_TOPIC }}
         run: python scripts/summarize.py
 
       - name: index.html 커밋 & 푸시
