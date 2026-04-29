@@ -8,15 +8,14 @@ import json
 import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
-from youtube_transcript_api import YouTubeTranscriptApi
-from groq import Groq
+from google import genai
 import requests
 
 # ── 환경변수 ──────────────────────────────────────────────
 YOUTUBE_API_KEY = os.environ['YOUTUBE_API_KEY']
-GROQ_API_KEY    = os.environ['GROQ_API_KEY']
-PLAYLIST_ID       = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
-NTFY_TOPIC        = os.environ.get('NTFY_TOPIC', '')
+GEMINI_API_KEY  = os.environ['GEMINI_API_KEY']
+PLAYLIST_ID     = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
+NTFY_TOPIC      = os.environ.get('NTFY_TOPIC', '')
 
 KST = timezone(timedelta(hours=9))
 DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
@@ -45,21 +44,12 @@ def get_today_video():
     return None
 
 
-def get_transcript(video_id):
-    """YouTube 자막(한국어 우선, 없으면 영어) 텍스트 반환"""
-    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['ko', 'en'])
-    return ' '.join(t['text'] for t in transcript)
-
-
 def summarize(video_id, video_title):
-    """Claude AI로 YouTube 자막을 요약 — JSON 반환"""
-    transcript = get_transcript(video_id)
+    """Gemini AI로 YouTube 영상을 직접 요약 — JSON 반환"""
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
-    prompt = f"""다음은 한국경제신문 뉴스 영상의 자막입니다.
+    prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
 영상 제목: {video_title}
-
-[자막]
-{transcript}
 
 아래 JSON 형식으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
@@ -76,14 +66,18 @@ def summarize(video_id, video_title):
 - 모든 내용은 한국어로 작성
 """
 
-    client = Groq(api_key=GROQ_API_KEY)
-    response = client.chat.completions.create(
-        model='llama-3.3-70b-versatile',
-        max_tokens=4096,
-        messages=[{'role': 'user', 'content': prompt}]
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents=[
+            genai.types.Part.from_uri(
+                file_uri=f'https://www.youtube.com/watch?v={video_id}',
+                mime_type='video/mp4'
+            ),
+            prompt
+        ]
     )
 
-    text  = response.choices[0].message.content.strip()
+    text  = response.text.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
