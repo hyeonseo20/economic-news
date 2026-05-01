@@ -109,7 +109,7 @@ def fetch_article(url):
         paras = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 30]
         body_text = ' '.join(paras)
 
-    body_text = re.sub(r'\s+', ' ', body_text)[:1500]
+    body_text = re.sub(r'\s+', ' ', body_text)[:1200]
 
     return f"{desc_text} {body_text}".strip() or '본문 없음'
 
