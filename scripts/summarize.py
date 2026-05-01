@@ -9,13 +9,11 @@ import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
 from google import genai
-from google.genai import types
 import requests
 
 # ── 환경변수 ──────────────────────────────────────────────
 YOUTUBE_API_KEY = os.environ['YOUTUBE_API_KEY']
-GCP_PROJECT_ID  = os.environ['GCP_PROJECT_ID']
-GCP_LOCATION    = 'us-central1'
+GEMINI_API_KEY  = os.environ['GEMINI_API_KEY']
 PLAYLIST_ID     = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
 NTFY_TOPIC      = os.environ.get('NTFY_TOPIC', '')
 
@@ -47,12 +45,8 @@ def get_today_video():
 
 
 def summarize(video_id, video_title):
-    """Vertex AI Gemini로 YouTube 영상을 직접 요약 — JSON 반환"""
-    client = genai.Client(
-        vertexai=True,
-        project=GCP_PROJECT_ID,
-        location=GCP_LOCATION
-    )
+    """Gemini AI로 YouTube 영상을 직접 요약 — JSON 반환"""
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
 영상 제목: {video_title}
@@ -73,9 +67,9 @@ def summarize(video_id, video_title):
 """
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash-lite',
         contents=[
-            types.Part.from_uri(
+            genai.types.Part.from_uri(
                 file_uri=f'https://www.youtube.com/watch?v={video_id}',
                 mime_type='video/mp4'
             ),
