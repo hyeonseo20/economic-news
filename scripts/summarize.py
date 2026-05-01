@@ -56,20 +56,29 @@ def get_articles():
     soup = BeautifulSoup(res.text, 'html.parser')
 
     seen, articles = set(), []
-    for h3 in soup.find_all('h3'):
-        a = h3.find('a', href=True)
-        if not a:
-            continue
+    for a in soup.find_all('a', href=True):
         href = a['href']
         if not re.search(r'/article/\w+', href):
             continue
         if href.startswith('/'):
             href = 'https://www.hankyung.com' + href
         href = href.split('?')[0]
+        if href in seen:
+            continue
+
+        # 제목: 링크 텍스트 → 부모 heading 텍스트 순으로 시도
         title = a.get_text(strip=True)
-        if href not in seen and title:
-            seen.add(href)
-            articles.append((title, href))
+        if not title:
+            for tag in ['h1', 'h2', 'h3', 'h4']:
+                parent = a.find_parent(tag)
+                if parent:
+                    title = parent.get_text(strip=True)
+                    break
+        if not title:
+            continue
+
+        seen.add(href)
+        articles.append((title, href))
 
     print(f'     기사 {len(articles)}개 발견')
     return articles
