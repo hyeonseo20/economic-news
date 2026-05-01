@@ -572,15 +572,19 @@
     </div>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  <script>
+    const STORAGE_KEY = 'hankyung_bookmarks';
 
-    const supabase = createClient(
-      'https://bqzuildljlkstlfvmtpz.supabase.co',
-      'sb_publishable_SfF7wId0dgskpSQvkt85zw_-QmMpNoI'
-    );
+    function loadFromStorage() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+      catch { return {}; }
+    }
 
-    const bookmarks = {};
+    function saveToStorage(bm) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bm));
+    }
+
+    const bookmarks = loadFromStorage();
 
     // ── 날짜 모달 ─────────────────────────────────────────
     window.openDateModal = function() {
@@ -652,60 +656,32 @@
     };
 
     // ── 책갈피 토글 ───────────────────────────────────────
-    window.toggleBookmark = async function(event, btn, title) {
+    window.toggleBookmark = function(event, btn, title) {
       event.stopPropagation();
       const isSaved = btn.classList.toggle('saved');
 
       if (isSaved) {
-        const body     = btn.closest('.accordion-item').querySelector('.accordion-body');
-        const content  = body ? body.innerHTML.trim() : '';
-        const newsDate = new Date().toISOString().slice(0, 10);
-
-        const { data, error } = await supabase
-          .from('bookmarks')
-          .insert({ title, content, news_date: newsDate })
-          .select('id')
-          .single();
-
-        if (error) { console.error('저장 실패:', error); btn.classList.remove('saved'); return; }
-        bookmarks[title] = { content, news_date: newsDate.slice(5), db_id: data.id };
+        const body    = btn.closest('.accordion-item').querySelector('.accordion-body');
+        const content = body ? body.innerHTML.trim() : '';
+        const today   = new Date().toISOString().slice(5, 10); // MM-DD
+        bookmarks[title] = { content, news_date: today };
       } else {
-        const entry = bookmarks[title];
-        if (entry?.db_id) {
-          const { error } = await supabase.from('bookmarks').delete().eq('id', entry.db_id);
-          if (error) { console.error('삭제 실패:', error); btn.classList.add('saved'); return; }
-        }
         delete bookmarks[title];
       }
+
+      saveToStorage(bookmarks);
       renderMyPage();
     };
 
-    // ── 초기 로드 ─────────────────────────────────────────
-    async function loadBookmarks() {
-      const { data, error } = await supabase
-        .from('bookmarks')
-        .select('*')
-        .order('created_at', { ascending: false });
+    // ── 초기 로드: 저장된 책갈피 버튼 상태 복원 ──────────
+    document.querySelectorAll('.bookmark-btn').forEach(btn => {
+      const titleEl = btn.closest('.accordion-header')?.querySelector('.accordion-title');
+      if (titleEl && bookmarks[titleEl.textContent.trim()]) {
+        btn.classList.add('saved');
+      }
+    });
 
-      if (error) { console.error('불러오기 실패:', error); return; }
-
-      data.forEach(row => {
-        bookmarks[row.title] = {
-          content:   row.content,
-          news_date: row.news_date.slice(5),
-          db_id:     row.id
-        };
-        document.querySelectorAll('.bookmark-btn').forEach(btn => {
-          const header = btn.closest('.accordion-header');
-          if (header?.querySelector('.accordion-title')?.textContent.trim() === row.title) {
-            btn.classList.add('saved');
-          }
-        });
-      });
-      renderMyPage();
-    }
-
-    loadBookmarks();
+    renderMyPage();
   </script>
 
 </body>
