@@ -132,10 +132,11 @@ def send_notification(date):
     """ntfy 푸시 알림 전송"""
     if not NTFY_TOPIC:
         return
+    from urllib.parse import quote
     requests.post(
         f'https://ntfy.sh/{NTFY_TOPIC}',
-        data=f'{date} 한경 모닝루틴 요약이 준비됐습니다 📰'.encode('utf-8'),
-        headers={'Title': '한경 모닝루틴', 'Priority': 'default'},
+        data=f'{date} 한경 모닝루틴 요약이 준비됐습니다'.encode('utf-8'),
+        headers={'Title': quote('한경 모닝루틴'), 'Priority': 'default'},
         timeout=10
     )
 
