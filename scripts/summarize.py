@@ -7,80 +7,97 @@ import os
 import json
 import re
 from datetime import datetime, timezone, timedelta
-from googleapiclient.discovery import build
-from google import genai
 import requests
+from bs4 import BeautifulSoup
+from groq import Groq
 
 # ── 환경변수 ──────────────────────────────────────────────
-YOUTUBE_API_KEY = os.environ['YOUTUBE_API_KEY']
-GEMINI_API_KEY  = os.environ['GEMINI_API_KEY']
-PLAYLIST_ID     = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
-NTFY_TOPIC      = os.environ.get('NTFY_TOPIC', '')
+GROQ_API_KEY = os.environ['GROQ_API_KEY']
+NTFY_TOPIC   = os.environ.get('NTFY_TOPIC', '')
 
-KST = timezone(timedelta(hours=9))
+KST  = timezone(timedelta(hours=9))
 DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 
-
-def get_today_video():
-    """오늘 날짜의 영상을 플레이리스트에서 찾아 반환"""
-    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-    today   = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
-
-    response = youtube.playlistItems().list(
-        part='snippet',
-        playlistId=PLAYLIST_ID,
-        maxResults=5
-    ).execute()
-
-    for item in response['items']:
-        snippet = item['snippet']
-        title   = snippet['title']
-        if today in title:
-            return {
-                'video_id': snippet['resourceId']['videoId'],
-                'title':    title,
-                'date':     datetime.now(KST).strftime('%Y-%m-%d'),
-            }
-    return None
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
+}
 
 
-def summarize(video_id, video_title):
-    """Gemini AI로 YouTube 영상을 직접 요약 — JSON 반환"""
-    client = genai.Client(api_key=GEMINI_API_KEY)
+def get_articles():
+    """hankyung.com/mr에서 오늘의 기사 URL 목록을 가져옴"""
+    res  = requests.get('https://www.hankyung.com/mr', headers=HEADERS, timeout=15)
+    soup = BeautifulSoup(res.text, 'html.parser')
 
-    prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
-영상 제목: {video_title}
+    seen, urls = set(), []
+    for a in soup.find_all('a', href=True):
+        href = a['href']
+        if re.search(r'/article/\d+', href):
+            if href.startswith('/'):
+                href = 'https://www.hankyung.com' + href
+            href = href.split('?')[0]
+            if href not in seen:
+                seen.add(href)
+                urls.append(href)
+
+    print(f'     기사 URL {len(urls)}개 발견')
+    return urls[:10]
+
+
+def fetch_article(url):
+    """기사 URL에서 제목과 본문을 추출"""
+    res  = requests.get(url, headers=HEADERS, timeout=15)
+    soup = BeautifulSoup(res.text, 'html.parser')
+
+    title = soup.find('h1') or soup.find('h2')
+    title_text = title.get_text(strip=True) if title else ''
+
+    body = (
+        soup.find('div', class_=re.compile(r'article|content|body', re.I)) or
+        soup.find('article')
+    )
+    body_text = body.get_text(separator=' ', strip=True) if body else ''
+    body_text = re.sub(r'\s+', ' ', body_text)[:3000]
+
+    return title_text, body_text
+
+
+def summarize(articles_data):
+    """Groq으로 기사 목록을 요약 — JSON 반환"""
+    combined = '\n\n'.join(
+        f'[기사 {i+1}] {title}\n{body}'
+        for i, (title, body) in enumerate(articles_data)
+    )
+
+    prompt = f"""다음은 한국경제신문 모닝루틴 Pick 기사들입니다.
+
+{combined}
 
 아래 JSON 형식으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
 {{
   "brief": ["핵심 한 줄 요약 1", "핵심 한 줄 요약 2", "핵심 한 줄 요약 3"],
   "items": [
-    {{"title": "뉴스 항목 제목", "content": "2~3문단 상세 설명"}}
+    {{"title": "뉴스 항목 제목", "content": "요약 내용"}}
   ]
 }}
 
 규칙:
-- brief: 오늘 영상에서 언급 비중이 높은 뉴스 3가지, 각 20자 이내
-- items: 영상에서 다룬 주요 뉴스 5~10개, content는 10문장 이내
+- brief: 언급 비중이 높은 뉴스 3가지, 각 20자 이내
+- items: 각 기사마다 하나의 항목, content는 10문장 이내
+- 반드시 제공된 기사 내용만 사용할 것. 기사에 없는 내용 추가 금지
+- 동일하거나 유사한 주제는 하나의 항목으로만 작성
+- 문체는 '~다', '~했다' 형식의 신문 기사체로 통일
 - 모든 내용은 한국어로 작성
-- 문체는 '~다', '~했다', '~없다' 형식의 신문 기사체로 통일
-- 동일하거나 유사한 주제의 뉴스를 중복 포함하지 말 것. 같은 기업/사건은 하나의 항목으로만 작성
-- 반드시 영상에서 실제로 언급된 내용만 작성할 것. 영상에 없는 내용을 추가하거나 추측하지 말 것
 """
 
-    response = client.models.generate_content(
-        model='gemini-2.5-flash-lite',
-        contents=[
-            genai.types.Part.from_uri(
-                file_uri=f'https://www.youtube.com/watch?v={video_id}',
-                mime_type='video/mp4'
-            ),
-            prompt
-        ]
+    client = Groq(api_key=GROQ_API_KEY)
+    response = client.chat.completions.create(
+        model='llama-3.3-70b-versatile',
+        max_tokens=4096,
+        messages=[{'role': 'user', 'content': prompt}]
     )
 
-    text  = response.text.strip()
+    text  = response.choices[0].message.content.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
@@ -97,11 +114,10 @@ def summarize(video_id, video_title):
     return result
 
 
-def generate_html(video_info, summary):
+def generate_html(summary):
     """template.html을 채워 index.html 생성"""
-    kst_now       = datetime.now(KST)
-    date_display  = f"{kst_now.strftime('%Y-%m-%d')} {DAYS[kst_now.weekday()]}"
-    video_id      = video_info['video_id']
+    kst_now      = datetime.now(KST)
+    date_display = f"{kst_now.strftime('%Y-%m-%d')} {DAYS[kst_now.weekday()]}"
 
     brief_html = ''.join(
         f'<li><span class="brief-num">{str(i+1).zfill(2)}</span>{item}</li>'
@@ -129,8 +145,8 @@ def generate_html(video_info, summary):
 
     html = template
     html = html.replace('{{DATE_DISPLAY}}',  date_display)
-    html = html.replace('{{VIDEO_ID}}',      video_id)
-    html = html.replace('{{VIDEO_TITLE}}',   video_info['title'])
+    html = html.replace('{{VIDEO_ID}}',      '')
+    html = html.replace('{{VIDEO_TITLE}}',   f"한경 모닝루틴 {kst_now.strftime('%Y-%m-%d')}")
     html = html.replace('{{BRIEF_ITEMS}}',   brief_html)
     html = html.replace('{{NEWS_ITEMS}}',    items_html)
     html = html.replace('{{TOTAL_COUNT}}',   str(len(summary['items'])))
@@ -157,22 +173,34 @@ def send_notification(date):
 def main():
     print('── 한경 모닝루틴 요약 시작 ──────────────')
 
-    print('[1/4] 오늘 영상 확인 중...')
-    video = get_today_video()
-    if not video:
-        print('     오늘 업로드된 영상 없음. 종료합니다.')
+    print('[1/4] 기사 목록 가져오는 중...')
+    urls = get_articles()
+    if not urls:
+        print('     기사를 찾을 수 없음. 종료합니다.')
         return
-    print(f'     발견: {video["title"]} ({video["video_id"]})')
 
-    print('[2/4] AI 요약 생성 중...')
-    summary = summarize(video['video_id'], video['title'])
+    print('[2/4] 각 기사 본문 수집 중...')
+    articles_data = []
+    for url in urls:
+        try:
+            title, body = fetch_article(url)
+            if title and body:
+                articles_data.append((title, body))
+                print(f'     ✓ {title[:40]}')
+        except Exception as e:
+            print(f'     ✗ {url} — {e}')
+
+    if not articles_data:
+        print('     기사 본문 수집 실패. 종료합니다.')
+        return
+
+    print('[3/4] AI 요약 생성 중...')
+    summary = summarize(articles_data)
     print(f'     요약 완료: {len(summary["items"])}개 항목')
 
-    print('[3/4] HTML 생성 중...')
-    generate_html(video, summary)
-
-    print('[4/4] 푸시 알림 전송 중...')
-    send_notification(video['date'])
+    print('[4/4] HTML 생성 및 알림 전송 중...')
+    generate_html(summary)
+    send_notification(datetime.now(KST).strftime('%Y-%m-%d'))
     print('     완료!')
 
     print('── 모든 작업 완료 ───────────────────────')

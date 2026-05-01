@@ -4,11 +4,6 @@ on:
   schedule:
     - cron: '0 0 * * 1-5'   # 매주 월~금 00:00 UTC = 09:00 KST
   workflow_dispatch:          # 수동 실행 허용
-    inputs:
-      test_date:
-        description: '테스트 날짜 (예: 20260430). 비우면 오늘 날짜 사용.'
-        required: false
-        default: ''
 
 permissions:
   contents: write
@@ -31,10 +26,8 @@ jobs:
 
       - name: 요약 실행
         env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          GEMINI_API_KEY:  ${{ secrets.GEMINI_API_KEY }}
-          NTFY_TOPIC:      ${{ secrets.NTFY_TOPIC }}
-          TEST_DATE:       ${{ github.event.inputs.test_date }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NTFY_TOPIC:   ${{ secrets.NTFY_TOPIC }}
         run: python scripts/summarize.py
 
       - name: index.html 커밋 & 푸시
@@ -42,7 +35,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if [ ! -f index.html ]; then
-            echo "index.html 없음 (오늘 영상 없음). 커밋 건너뜀."
+            echo "index.html 없음. 커밋 건너뜀."
             exit 0
           fi
           git add index.html
