@@ -219,7 +219,10 @@
     .bookmark-btn:hover svg { stroke: #00C896; }
 
     .accordion-body {
-      display: none;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
       padding: 14px 16px 16px 40px;
       font-size: 13px;
       color: #333;
@@ -228,7 +231,10 @@
       background: #ffffff;
     }
 
-    .accordion-body.open { display: block; }
+    .accordion-body.open {
+      max-height: 800px;
+      opacity: 1;
+    }
 
     /* MY PAGE */
     .mypage-empty {
@@ -264,7 +270,10 @@
     .mypage-item-header.open-header { background: #161b22; }
 
     .mypage-item-body {
-      display: none;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
       padding: 14px 16px 16px 40px;
       font-size: 13px;
       color: #333;
@@ -273,7 +282,10 @@
       background: #ffffff;
     }
 
-    .mypage-item-body.open { display: block; }
+    .mypage-item-body.open {
+      max-height: 800px;
+      opacity: 1;
+    }
 
     .mypage-toggle {
       font-family: 'IBM Plex Mono', monospace;
