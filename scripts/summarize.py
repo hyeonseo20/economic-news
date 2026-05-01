@@ -65,10 +65,9 @@ def fetch_article(url):
         soup.find('article')
     )
     body_text = body.get_text(separator=' ', strip=True) if body else ''
-    body_text = re.sub(r'\s+', ' ', body_text)[:1200]
+    body_text = re.sub(r'\s+', ' ', body_text)[:800]
 
-    combined = f"{desc_text} {body_text}".strip()
-    return title_text, combined
+    return title_text, body_text
 
 
 def summarize(articles_data):
