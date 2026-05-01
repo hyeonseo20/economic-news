@@ -47,7 +47,7 @@ def get_today_video():
 
 
 def get_articles():
-    """hankyung.com/mr에서 해당 날짜의 기사 URL 목록을 가져옴"""
+    """hankyung.com/mr에서 해당 날짜의 기사 (제목, URL) 목록을 가져옴"""
     target_date = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
     print(f'     대상 날짜: {target_date}')
 
@@ -55,35 +55,31 @@ def get_articles():
     res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
-    seen, urls = set(), []
-    for a in soup.find_all('a', href=True):
+    seen, articles = set(), []
+    for h3 in soup.find_all('h3'):
+        a = h3.find('a', href=True)
+        if not a:
+            continue
         href = a['href']
-        if re.search(r'/article/\w+', href):
-            if href.startswith('/'):
-                href = 'https://www.hankyung.com' + href
-            href = href.split('?')[0]
-            if href not in seen:
-                seen.add(href)
-                urls.append(href)
+        if not re.search(r'/article/\w+', href):
+            continue
+        if href.startswith('/'):
+            href = 'https://www.hankyung.com' + href
+        href = href.split('?')[0]
+        title = a.get_text(strip=True)
+        if href not in seen and title:
+            seen.add(href)
+            articles.append((title, href))
 
-    print(f'     기사 URL {len(urls)}개 발견')
-    return urls[:10]
+    print(f'     기사 {len(articles)}개 발견')
+    return articles
 
 
 def fetch_article(url):
-    """기사 URL에서 제목과 본문을 추출"""
+    """기사 URL에서 본문을 추출"""
     res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
-    # 제목: og:title → h1 → h2 순으로 시도
-    og_title = soup.find('meta', property='og:title')
-    if og_title and og_title.get('content', '').strip():
-        title_text = og_title['content'].strip()
-    else:
-        h = soup.find('h1') or soup.find('h2')
-        title_text = h.get_text(strip=True) if h else url
-
-    # 본문: og:description → article 태그 → class 기반 순으로 시도
     og_desc = soup.find('meta', property='og:description')
     desc_text = og_desc['content'].strip() if og_desc and og_desc.get('content') else ''
 
@@ -94,8 +90,7 @@ def fetch_article(url):
     body_text = body.get_text(separator=' ', strip=True) if body else ''
     body_text = re.sub(r'\s+', ' ', body_text)[:800]
 
-    combined = f"{desc_text} {body_text}".strip() or '본문 없음'
-    return title_text, combined
+    return f"{desc_text} {body_text}".strip() or '본문 없음'
 
 
 def summarize(articles_data):
@@ -214,21 +209,20 @@ def main():
     print('── 한경 모닝루틴 요약 시작 ──────────────')
 
     print('[1/4] 기사 목록 가져오는 중...')
-    urls = get_articles()
-    if not urls:
+    articles = get_articles()
+    if not articles:
         print('     기사를 찾을 수 없음. 종료합니다.')
         return
 
     print('[2/4] 각 기사 본문 수집 중...')
     articles_data = []
-    for url in urls:
+    for title, url in articles:
         try:
-            title, body = fetch_article(url)
-            if title:
-                articles_data.append((title, body))
-                print(f'     ✓ {title[:40]}')
+            body = fetch_article(url)
+            articles_data.append((title, body))
+            print(f'     ✓ {title[:40]}')
         except Exception as e:
-            print(f'     ✗ {url} — {e}')
+            print(f'     ✗ {title[:40]} — {e}')
 
     if not articles_data:
         print('     기사 본문 수집 실패. 종료합니다.')
