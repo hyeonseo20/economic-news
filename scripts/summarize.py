@@ -116,14 +116,12 @@ def summarize(articles_data):
 아래 JSON 형식으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
 {{
-  "brief": ["핵심 한 줄 요약 1", "핵심 한 줄 요약 2", "핵심 한 줄 요약 3"],
   "items": [
     {{"title": "뉴스 항목 제목", "content": "요약 내용"}}
   ]
 }}
 
 규칙:
-- brief: 언급 비중이 높은 뉴스 3가지, 각 20자 이내
 - items: 각 기사마다 하나의 항목, title은 반드시 제공된 [기사 N] 제목을 그대로 사용할 것 (절대 수정 금지), content는 4~5문장으로 요약
 - 반드시 제공된 기사 내용만 사용할 것. 기사에 없는 내용 추가 금지
 - 동일하거나 유사한 주제는 하나의 항목으로만 작성
@@ -167,11 +165,6 @@ def generate_html(summary, video=None):
     kst_now      = datetime.now(KST)
     date_display = f"{kst_now.strftime('%Y-%m-%d')} {DAYS[kst_now.weekday()]}"
 
-    brief_html = ''.join(
-        f'<li><span class="brief-num">{str(i+1).zfill(2)}</span>{item}</li>'
-        for i, item in enumerate(summary['brief'])
-    )
-
     items_html = ''.join(
         f'''<div class="accordion-item">
           <div class="accordion-header" onclick="toggle(this)">
@@ -198,7 +191,6 @@ def generate_html(summary, video=None):
     html = html.replace('{{DATE_DISPLAY}}',  date_display)
     html = html.replace('{{VIDEO_ID}}',      video_id)
     html = html.replace('{{VIDEO_TITLE}}',   video_title)
-    html = html.replace('{{BRIEF_ITEMS}}',   brief_html)
     html = html.replace('{{NEWS_ITEMS}}',    items_html)
     html = html.replace('{{TOTAL_COUNT}}',   str(len(summary['items'])))
 
