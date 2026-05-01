@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한경 모닝루틴 — 2026-05-01 FRI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #0D1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* 헤더 */
+    .header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 5px;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .header-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+      margin-top: 3px;
+    }
+
+    .date-btn {
+      border: 1px solid #00C896;
+      background: transparent;
+      color: #00C896;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 1px;
+    }
+
+    .date-btn:hover { background: rgba(0,200,150,0.1); }
+
+    /* 탭 메뉴 */
+    .tab-bar {
+      display: flex;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      position: sticky;
+      top: 73px;
+      z-index: 99;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #8b949e;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      user-select: none;
+    }
+
+    .tab:hover { color: #c9d1d9; }
+
+    .tab.active {
+      color: #00C896;
+      border-bottom: 2px solid #00C896;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 썸네일 */
+    .thumbnail {
+      display: block;
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      text-decoration: none;
+    }
+
+    .thumbnail-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(0,0,0,0.35);
+    }
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border: 2px solid #00C896;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 16px solid #00C896;
+      margin-left: 3px;
+    }
+
+    /* TODAY'S BRIEF */
+    .brief-block {
+      padding: 16px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: #00C896;
+      margin-bottom: 12px;
+    }
+
+    .brief-list { list-style: none; }
+
+    .brief-list li {
+      display: flex;
+      gap: 10px;
+      padding: 7px 0;
+      font-size: 13px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      line-height: 1.5;
+    }
+
+    .brief-list li:last-child { border-bottom: none; }
+
+    .brief-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #00C896;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    /* 뉴스 카운트 바 */
+    .news-count-bar {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 7px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* 아코디언 */
+    .accordion-item { border-bottom: 1px solid #21262d; }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      padding: 13px 16px;
+      cursor: pointer;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .accordion-header:hover { background: #161b22; }
+    .accordion-header.open-header { background: #161b22; }
+
+    .accordion-toggle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      flex-shrink: 0;
+      width: 14px;
+    }
+
+    .accordion-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      border: 1px solid #00C896;
+      padding: 1px 5px;
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+
+    .accordion-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #c9d1d9;
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    /* 책갈피 버튼 */
+    .bookmark-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .bookmark-btn svg {
+      width: 14px;
+      height: 18px;
+      fill: none;
+      stroke: #30363d;
+      stroke-width: 1.5;
+      transition: stroke 0.15s, fill 0.15s;
+    }
+
+    .bookmark-btn.saved svg {
+      fill: #00C896;
+      stroke: #00C896;
+    }
+
+    .bookmark-btn:hover svg { stroke: #00C896; }
+
+    .accordion-body {
+      display: none;
+      padding: 14px 16px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-top: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .accordion-body.open { display: block; }
+
+    /* MY PAGE */
+    .mypage-empty {
+      padding: 48px 16px;
+      text-align: center;
+    }
+
+    .mypage-empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    .mypage-empty-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.8;
+    }
+
+    .mypage-item { border-bottom: 1px solid #21262d; }
+
+    .mypage-item-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mypage-item-header:hover { background: #161b22; }
+    .mypage-item-header.open-header { background: #161b22; }
+
+    .mypage-item-body {
+      display: none;
+      padding: 14px 16px 16px 40px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+      border-top: 1px solid #21262d;
+      background: #ffffff;
+    }
+
+    .mypage-item-body.open { display: block; }
+
+    .mypage-toggle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      flex-shrink: 0;
+      width: 14px;
+      padding-top: 2px;
+    }
+
+    .mypage-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #8b949e;
+      flex-shrink: 0;
+      padding-top: 2px;
+      min-width: 58px;
+    }
+
+    .mypage-title {
+      font-size: 13px;
+      color: #c9d1d9;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .mypage-bookmark {
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .mypage-bookmark svg {
+      width: 12px;
+      height: 16px;
+      fill: #00C896;
+      stroke: #00C896;
+      stroke-width: 1.5;
+    }
+
+    .mypage-count-bar {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 7px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* 날짜 선택 모달 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: flex-end;
+      z-index: 200;
+    }
+
+    .modal-sheet {
+      background: #161b22;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      border-top: 1px solid #30363d;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #30363d;
+      font-size: 14px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .modal-close {
+      background: none;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    .date-list { list-style: none; }
+
+    .date-list li {
+      padding: 13px 16px;
+      font-size: 13px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .date-list li:hover { background: #0D1117; }
+    .date-list li.today { color: #e6edf3; font-weight: 700; }
+
+    .today-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      border: 1px solid #00C896;
+      color: #00C896;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">KOREA MARKET</div>
+      <div class="header-title">한경 모닝루틴</div>
+      <div class="header-date">2026-05-01 FRI</div>
+    </div>
+    <button class="date-btn" onclick="openDateModal()">날짜 선택 ▼</button>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('news')">NEWS</div>
+    <div class="tab" onclick="switchTab('mypage')">MY PAGE</div>
+  </div>
+
+  <!-- NEWS 탭 콘텐츠 -->
+  <div class="tab-content active" id="tab-news">
+
+    <a href="https://www.youtube.com/watch?v=V2RE_-gCFCE" target="_blank" class="thumbnail">
+      <img src="https://img.youtube.com/vi/V2RE_-gCFCE/hqdefault.jpg"
+           alt="한국경제신문 30분 만에 읽기 | 20260430🌞#모닝루틴"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <div class="thumbnail-inner">
+        <div class="play-btn"><div class="play-icon"></div></div>
+      </div>
+    </a>
+
+    <div class="brief-block">
+      <div class="section-label">TODAY'S BRIEF</div>
+      <ul class="brief-list">
+        <li><span class="brief-num">01</span>코스피 4월 역대급 상승, 5월 엇갈린 전망</li><li><span class="brief-num">02</span>AI 반도체 ETF 수익률, 최대 2.5배</li><li><span class="brief-num">03</span>쿠팡, 미 상장 후 첫 규제...동일인에 김범석</li>
+      </ul>
+    </div>
+
+    <div class="news-count-bar">TOTAL 11 ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다</div>
+
+    <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">01</span>
+            <span class="accordion-title">코스피 4월 역대급 상승, 5월 엇갈린 전망</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "코스피 4월 역대급 상승, 5월 엇갈린 전망")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">코스피 지수가 4월 한 달 동안 30% 상승했다. 하지만 5월부터는 여러 불안 요인이 나타나고 있다. 미국 연준 의장 교체, 중동 리스크 등은 성장 동력을 제한하는 요인으로 작용할 수 있다는 분석이 나온다. 또한, 5월에 나타나는 '셀인 메이' 격언 때문에 투자자들은 차익 실현을 고민할 수밖에 없다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">02</span>
+            <span class="accordion-title">AI 반도체 ETF 수익률, 최대 2.5배</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "AI 반도체 ETF 수익률, 최대 2.5배")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">4월 한 달간 국내 반도체 ETF 수익률을 살펴보니, SOL AI 반도체TOP2플러스 ETF가 45.55%로 가장 높은 수익률을 기록했다. 이 외에도 ITF K-AI반도체, HANARO Fn K-반도체 ETF 등도 높은 수익률을 나타냈으며, 특히 삼성전자와 SK하이닉스를 중심으로 포트폴리오를 구성한 ETF들이 좋은 성과를 냈다. 다만, 너무 많이 오른 만큼 조정을 걱정하는 투자자들도 있다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">03</span>
+            <span class="accordion-title">쿠팡, 미국 상장 후 첫 규제…동일인에 김범석</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "쿠팡, 미국 상장 후 첫 규제…동일인에 김범석")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">공정거래위원회는 5월 1일부로 쿠팡의 동일인을 김범석 의장으로 변경하겠다고 발표했다. 이는 2017년 이후 5년 만의 일로, 동일인 지정에 따른 규제가 강화된다. 쿠팡은 이에 대해 법인 지정 외에 사익 편취 우려가 없다며 행정 소송을 제기하겠다는 입장이다. 국내 기업들과 라이선스 계약을 맺으며 로열티 사업을 진행해 왔지만, 한국 기업들에게는 이러한 규제가 부담으로 작용할 수 있다는 분석이 나온다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">04</span>
+            <span class="accordion-title">LG전자, PC·부품 인상 시사…"칩 부족 장기화"</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "LG전자, PC·부품 인상 시사…\"칩 부족 장기화\"")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">LG전자는 PC 등 IT 기기에는 인공지능(AI) 시장 수요 증가와 반도체 공급 부족이 계속되면서 "메모리 가격이 계속 하락하는 국면에서", "메모리 가격이 계속 하락하면", "반도체 거래 관련 리스크는 특수 법인에 속한 QCP들을 자산 5조 원을 넘는 공정거래법상 기업 집단으로 지정하는 데 이름을 올렸던 K뷰티 그룹을 한국 콜마, 롯데케미칼 기업을 주축으로 한 토스도 새로 대기업으로 지정된다고 지적했다. LG전자는 반도체 부문에서 1분기 매출이 1년 전보다 19% 증가한 35조 7500억원을 기록했고, 영업이익은 1조 9864억원으로 사상 최대 분기 실적을 달성했다고 발표했습니다. 하지만 주가는 4.71% 하락했고 SK는 0.44% 하락했습니다. 이 또한 대형 기술주에 대한 투자자들의 관심이 집중되면서 밸류 체인에 따라 주가 흐름이 달라지는 모습이었는데요. 특히 메타가 1분기 실적을 발표하면서 예상보다 잘 나왔지만 주가는 6% 가량 하락하는 모습을 보였습니다. 삼성전자와 SK하이닉스는 18%대, 18.4%대 하락을 기록했고요. LG전자, PC 부품 인상 시사... "칩 부족 장기화"라는 기사는 LG 전자가 PC 부품 가격 인상 가능성을 내비치면서 메모리 반도체 등의 고가 제품 생산 능력을 확충하고 반도체 공급 부족이 태평양 전쟁 때도 언급된 경제 제재나 금리 인하에 따른 경제의 과열을 막기 위한 목적도 있을 수 있다. 라는 분석도 나오고 있습니다. LG 전자는 1분기 매출 18조 7000억 원을 기록했고요. 영업 이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나온 수치인데, 시간 외 거래에서 오히려 하락했다는 점은 투자자들의 관심이 높았지만 기대치에는 못 미쳤다는 분석도 나옵니다. 이 기술주들이 주가가 많이 올라서 부담되는 상황에서 이번 분기에 나와 준 실적은 생각보다 괜찮았다고 평가되지만, 다음 분기에 대한 전망을 봤을 때 아직은 좀 지켜봐야 된다는 의견도 있습니다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">05</span>
+            <span class="accordion-title">LG전자, PC 업황 인상 시사 - "칩 부족 장기화"</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "LG전자, PC 업황 인상 시사 - \"칩 부족 장기화\"")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">LG전자는 PC 등 IT 기기에 인공지능(AI) 시장 수요 증가와 반도체 공급 부족이 계속되면서 "메모리 가격이 계속 하락하는 국면에서", "메모리 가격이 계속 하락하면", "반도체 거래 관련 리스크는 특수 법인에 속한 QCP들을 계산 5조 원을 넘는 공정거래법상 기업 집단으로 지정하는데 이름을 올렸던 K뷰티 그룹을 한국 콜마, 롯데케미칼 기업을 주축으로 한 토스도 새로 대기업으로 지정된다고 지적했습니다. LG전자는 반도체 부문에서 1분기 매출이 1년 전보다 19% 증가한 35조 7500억 원을 기록했고, 영업 이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나온 수치인데, 시간 외 거래에서 오히려 하락했다는 점은 투자자들의 관심이 높았지만 기대치에는 못 미쳤다는 분석도 나옵니다. LG전자는 1분기 매출 18조 7000억 원을 기록했고, 영업이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나왔지만 주가는 4.71% 하락했고 SK는 0.44% 하락했습니다. 이 또한 대형 기술주에 대한 투자자들의 관심이 집중되면서 밸류 체인에 따라 주가 흐름이 달라지는 모습이었는데요. 특히 메타는 1분기 실적을 발표하면서 예상보다 잘 나왔지만 주가는 6% 가량 하락하는 모습을 보였습니다. 삼성전자와 SK하이닉스는 18%대, 18.4%대 하락을 기록했고요. LG전자는 반도체 부문에서 1분기 매출이 1년 전보다 19% 증가한 35조 7500억 원을 기록했고, 영업 이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나왔지만, 주가는 4.71% 하락했고, SK는 0.44% 하락했습니다. 이는 반도체 가격이 상승하는 가운데 추후에 PC 가격도 더 인상이 될 수 있다는 전망을 내놓고 있습니다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">06</span>
+            <span class="accordion-title">AI 필수품 된 변압기 가스 터빈…K-에너지 밸류체인 전성시대</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "AI 필수품 된 변압기 가스 터빈…K-에너지 밸류체인 전성시대")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">AI 수요 증가와 반도체 업황 개선, 그리고 친환경 에너지 전환이라는 세 가지 키워드가 최근 증시를 뜨겁게 달구고 있습니다. 특히 AI 필수품으로 꼽히는 변압기, 가스 터빈, 그리고 K-에너지 밸류체인 관련 기업들이 최근 주목받고 있는데, 관련 기업들의 주가 흐름도 전반적으로 좋았습니다. 예를 들어, 삼성전자는 1.8% 상승하며 22만 6천원, SK 하이닉스는 0.54% 하락한 129만 3천원에 마감했고, LG 전자는 4.71% 하락한 13만 5천 8백 원에 마감했습니다. 하지만 주가는 4.71% 하락했고 SK는 0.44% 하락했습니다. 이 기술주들에 대한 투자자들의 관심이 집중되면서 밸류 체인에 따라 주가 흐름이 달라지는 모습이었는데요. 특히 메타는 1분기 실적을 발표하면서 예상보다 잘 나왔지만 주가는 6% 가량 하락하는 모습을 보였습니다. 삼성전자와 SK 하이닉스는 18%대, 18.4%대 하락을 기록했고요. LG전자는 반도체 부문에서 1분기 매출이 1년 전보다 19% 증가한 35조 7500억 원을 기록했고, 영업이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나왔지만, 주가는 4.71% 하락했고 SK는 0.44% 하락했습니다. 하지만 최근 들어서는 이러한 흐름이 변화하면서 관련 업종들을 골고루 살펴볼 필요가 있습니다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">07</span>
+            <span class="accordion-title">LG전자, PC값 인상 시사 - "칩 부족 장기화"</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "LG전자, PC값 인상 시사 - \"칩 부족 장기화\"")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">LG전자는 PC 등 IT 기기에 인공지능(AI) 수요 증가와 반도체 공급 부족이 계속되면서 "메모리 가격이 계속 하락하는 국면에서", "메모리 가격이 계속 하락하면", "반도체 거래 관련 리스크는 특수 법인에 속한 QCP들을 계산 5조 원을 넘는 공정거래법상 기업 집단으로 지정하는데 이름을 올렸던 K뷰티 그룹을 한국 콜마, 롯데케미칼 기업을 주축으로 한 토스도 새로 대기업으로 지정된다고 지적했습니다. LG전자는 반도체 부문에서 1분기 매출이 1년 전보다 19% 증가한 35조 7500억 원을 기록했고, 영업이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나왔지만, 주가는 4.71% 하락했고 SK는 0.44% 하락했습니다. 이는 반도체 가격이 상승하는 가운데 추후에 PC 가격도 더 인상이 될 수 있다는 전망을 내놓고 있습니다. LG전자는 PC 제품군에 업계 전반에 걸쳐 가성비 값을 낮추는 부분을 반영한 것으로 알려져 있는데 "메모리 가격이 계속 하락하면" 가성비 측면에서 "메모리 가격이 계속 하락하면", "반도체 거래 관련 리스크는 특수 법인에 속한 QCP들을 계산 5조 원을 넘는 공정거래법상 기업 집단으로 지정하는데 이름을 올렸던 K뷰티 그룹을 한국 콜마, 롯데케미칼 기업을 주축으로 한 토스도 새로 대기업으로 지정된다고 지적했습니다. LG전자는 반도체 부문에서 1분기 매출이 1년 전보다 19% 증가한 35조 7500억 원을 기록했고, 영업이익은 6천억 원을 돌파했고, 순이익은 5,500억 원 정도였습니다. 시장에서 예상했던 것보다 잘 나왔지만, 주가는 4.71% 하락했고, SK는 0.44% 하락했습니다. 이는 반도체 가격이 상승하는 가운데 추후에 PC 가격도 더 인상이 될 수 있다는 전망을 내놓고 있습니다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">08</span>
+            <span class="accordion-title">국산 1호 항암제 첫 허가…식약처, 큐로셀 '림카토' 허가</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "국산 1호 항암제 첫 허가…식약처, 큐로셀 '림카토' 허가")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">한미 특허 만료 말기 항암 치료제, "해외 시장 진출 본격화"라는 기사 제목처럼. 현재 국내에서 개발된 1호 항암제가 나왔습니다. 바로 큐로셀의 "림카토"인데요. 미국 식품의약국 FDA로부터 허가를 받았고, 원샷 항암제라고 불리는데, 연간 3,500억 원이 넘는 매출을 기록할 것으로 보입니다. 1호 CAR-T 항암제인 킴리아와 삼성바이오로직스, 커티 시트론 셀러 등 상시 상환 연계 킴리아 약물 중 큐로셀이 자산 5조원을 넘는 공정거래법상 기업 집단으로 지정되는 데 이름을 올렸다는 K 한국 콜마, QCP 그룹, 오리온, 희성, 일진그룹도 함께 신규 지정을 받은 것으로 알려졌습니다. 1호 CAR-T 치료제 킴리아로 50% 넘는 PC 매출 비중을 차지하고 있는 LG전자와 연관이 있었기 때문입니다. 1분기 매출은 23.8% 증가했고, 2분기에는 23.7% 증가를 기록했습니다. LG전자는 1분기 실적을 발표하면서"메모리 가격 하락", "멸균 정합" 등 예상보다 늦은 생산이 가능할 것으로 보이고, "메모리 가겨이 계속 하락"하면서"메모리 가겨이 계속 하락하면" PC 가격 상승에 추가적인 미동은 불가능한 것으로 보인다고 지적했다. LG전자는 올해 2분기까지 PC 제조사들을 상대로 "메모리 가격이 계속 하락할 것" 그리고 "메모리 가겨이 계속 하락할 것"이라는 전망을 했고, 3분기까지 PC 가격을 10~20% 올릴 것으로 예상했다. 또한 4분기에 10~20% 인상을 한다고 하는 전망이 나왔던 데는 3분기에도 10% 정도는 상승할 것으로 기대했습니다. 그리고 PC 출하량 감소 등을 감안하면 "메모리 가격 하락"이"메모리 가겨이 계속 하락할 것으로 보인다"라고 했는데 "메모리 가격 상승"이 곧 "메모리 가겨이 계속 하락할 것"이라고 예측했습니다. "메모리 가격이 하락할 것"이라는 전망이 오히려 PC 출하량을 늘리는 것으로 보고 있다."고 분석했습니다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">09</span>
+            <span class="accordion-title">AI 필수품 된 변압기 가스 터빈…K-에너지 밸류체인 전성시대</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "AI 필수품 된 변압기 가스 터빈…K-에너지 밸류체인 전성시대")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">AI 관련 수요와 전력 수요 증가로 인해 변압기, 가스 터빈, K-에너지 밸류체인이 새로운 전성시대를 맞이하고 있습니다. 이는 AI가 데이터 센터 관리, 도시 재건, 차세대 에너지, 반도체 ESG 등 사업 전반에 걸쳐 핵심적인 역할을 수행하면서 관련 시장 규모가 급격하게 성장할 수 있다는 전망 때문입니다. 실제로 미국에서 35조 원이 넘는 생산 기기를 지으면서 "AI가 칩 설계 및 딥 러닝, 혹은 경합 경험" 1분기 가장 큰 매출 35조를 기록했던 엔비디아와 "탈탄소 경영"을 필두로 성장한 기업들이 부각되고 있습니다. 특히 LG전자가 1분기 실적을 발표하면서 "메모리 가격 하락"과 "멸균 정합" 등의 시장 전망치를 뛰어넘었다는 분석이 있었는데요. 또한, SK가 계열사를 통했던 이러한 DCI(데이터센터) 관련 투자까지도 100% 증가했다는 점을 감안했을 때, LG전자는 1분기 매출 18조 7,000억원을 기록했고, 영업이익은 6천억원, 순이익은 5,500억원을 기록했습니다. 시장 예상치를 상회하는 실적을 기록한데다가, LG전자가 앞으로 AI 시장 선점에 대한 기대감도 높은 것으로 풀이됩니다. 특히 AI 솔루션 사업부는 29% 성장했고, 오피스 사업부도 19% 성장하는 등 전반적인 성장세를 보였습니다. 다만, LG전자의 주가는 4.71% 하락했고, SK는 0.44% 하락했습니다. 최근에는 이런 흐름을 보였는데, 특히 메타의 경우 1분기 실적 발표 이후 주가가 6% 가량 하락하는 모습을 보이기도 했습니다. 하지만 삼성전자와 SK 하이닉스 목표 주가를 계속 올려 잡고 있다는 점도 주목할 만합니다. 이와 더불어, LG전자는 1분기 실적을 발표하면서 "메모리 가격 하락"을 전망했고, "멸균 정합" 등을 필두로 하여 PC 시장 성장을 이끌고 있습니다. 이와 관련하여, "메모리 가겨이 계속 하락하면" PC 가격 상승에 추가적인 부담은 없을 것으로 보인다고 분석했습니다. LG전자는 전체 PC 매출에서 메모리 가동률이 35%가량 차지하고 있으며, 이러한 흐름은 3분기까지 PC 출하량을 늘리는 것으로 보입니다. LG전자의 주가 상승 여력은 35%에서 40% 정도로 보고 있습니다.</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">10</span>
+            <span class="accordion-title">미르의 전설' IP 무단 사용에 로열티 430억원 반박"화해</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "미르의 전설' IP 무단 사용에 로열티 430억원 반박\"화해")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">한국 게임 시장과 지식재산권(IP) 분쟁에서 사용으로 의의 있는 수주 현금 회수에 성공했다는 "미르의 전설" 위메이드는 중국 게임사 킹넷과 로열티 분쟁을 마무리하고 430억원을 받으면 된다. 위메이드는 킹넷을 상대로 전례 없는 IP 로열티 미지급 분쟁을 진행했다고 29일 밝혔다. 화해 계약은 명목상으로는 10년 분쟁을 끝내고 IP 로열티 미지급 분쟁을 종료했는데, 약속된 로열티 미지급분은 당초 1억 9864만 달러였다. 미르의 전설 2는 2000년대 초 중국에 획기적인 인기를 누렸던 게임인데, 위메이드는 중국 게임사 킹넷과 로열티 분쟁을 마무리하고 430억원을 받으면 된다. 위메이드는 킹넷을 상대로 전례 없는 IP 로열티 미지급 분쟁을 진행했다고 29일 밝혔다. 화해 계약은 명목상으로는 10년 분쟁을 끝내고 IP 로열티 미지급 분쟁을 종료했는데, 약속된 로열티 미지급분은 당초 1억 9864만 달러였다. 미르의 전설 2는 2000년대 초 중국에 획기적인 인기를 누렸던 게임인데, 당시 수십억 달러와 더불어 IP 무단 사용에 대한 로열티 430억 원을 받고 "화해"했다. 지금은 10년 만에 이 소송을 마무리하고 사업을 추진해야 한다. 하지만 계약 체결 후 현지 업체들이 IP 를 지급하지 않거나 제 3자에게 IP를 무단 제공하는 사례가 반복되고 있어</div>
+        </div><div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">11</span>
+            <span class="accordion-title">김범석 동일인 지정 놓고 맞불은 공정위와 쿠팡</span>
+            <button class="bookmark-btn" onclick="toggleBookmark(event, this, "김범석 동일인 지정 놓고 맞불은 공정위와 쿠팡")">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">공정위, 5년 만에 '법인'서 변경 · 사익편취 규제 대상. 동생이 실질적 경영 참여 판단 "예외요건 충족 못해" 쿠팡은 행정 소송 예고·웅진·콜마 등 대기업 첫 입성. 김범석 쿠팡 Inc. 의장. 공정위는 5년 만에 '법인'에서 '사익 편취' 규제 대상으로 변경하고 '동일인'으로 김범석 의장을 지정하겠다고 발표했는데요. 이 과정에서 쿠팡 측은 "동생 김유석 부사장이 경영에 참여하고 있고", "이러한 사유로 동일인으로 지정하는 것은 법리적으로 맞지 않다"는 등 여러 가지 반박과 함께 "메모리 가격 하락"을 전제로 삼고 있습니다. 실제로 LG 전자는 1분기 실적을 발표하면서 "메모리 가격 하락"을 전망했는데, "메모리 가격이 계속 하락하면" PC 가격 상승에 추가적인 부담이 없을 것으로 보인다고 분석했습니다. LG전자는 1분기 실적을 발표하면서 "메모리 가겨이 계속 하락하면" PC 가격 상승에 추가적인 부담이 없을 것으로 보인다고 진단했습니다. 공정위는 김범석 의장이 한국의 여러 기업에 투자하면서, 그 투자한 내용으로 보았을 때, 한국 기업에 대한 규제를 적용하는 것이 맞다고 판단했고, 이에 따라 김범석 의장을 동일인으로 지정하고, 규제를 하겠다고 발표한 것입니다. 하지만 쿠팡 측에서는 이에 대해 반발하고 있습니다. 쿠팡은 행정 소송을 하겠다고 밝혔고, 웅진, 콜마 등 다른 기업들도 유사한 사례가 있는지 살펴보면서 대응할 것으로 보입니다. 특히 "동일인"을 "개인"으로 지정하는 것에 대해서는 법적 문제가 있지 않느T는 주장도 나오고 있습니다.</div>
+        </div>
+
+  </div>
+
+  <!-- MY PAGE 탭 콘텐츠 -->
+  <div class="tab-content" id="tab-mypage">
+    <div class="mypage-count-bar" id="mypage-count">SAVED 0 ITEMS</div>
+    <div id="mypage-list">
+      <div class="mypage-empty">
+        <div class="mypage-empty-icon">🔖</div>
+        <div class="mypage-empty-text">저장된 뉴스가 없습니다.<br>NEWS 탭에서 책갈피를 추가해보세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 날짜 선택 모달 -->
+  <div class="modal-overlay" id="date-modal" style="display:none;" onclick="closeDateModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        날짜 선택
+        <button class="modal-close" onclick="closeDateModal()">✕ 닫기</button>
+      </div>
+      <ul class="date-list">
+        <li class="today">
+          2026-05-01 FRI — 오늘
+          <span class="today-badge">TODAY</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://bqzuildljlkstlfvmtpz.supabase.co',
+      'sb_publishable_SfF7wId0dgskpSQvkt85zw_-QmMpNoI'
+    );
+
+    const bookmarks = {};
+
+    // ── 날짜 모달 ─────────────────────────────────────────
+    window.openDateModal = function() {
+      document.getElementById('date-modal').style.display = 'flex';
+    };
+
+    window.closeDateModal = function(event) {
+      if (!event || event.target === document.getElementById('date-modal')) {
+        document.getElementById('date-modal').style.display = 'none';
+      }
+    };
+
+    // ── 탭 전환 ───────────────────────────────────────────
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'news') || (i === 1 && tab === 'mypage'));
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    };
+
+    // ── 아코디언 ──────────────────────────────────────────
+    window.toggle = function(header) {
+      const body   = header.nextElementSibling;
+      const icon   = header.querySelector('.accordion-toggle');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      icon.textContent = isOpen ? '▶' : '▼';
+      header.classList.toggle('open-header', !isOpen);
+    };
+
+    // ── MY PAGE 렌더링 ────────────────────────────────────
+    function renderMyPage() {
+      const saved = Object.entries(bookmarks);
+      const list  = document.getElementById('mypage-list');
+      const count = document.getElementById('mypage-count');
+      count.textContent = `SAVED ${saved.length} ITEMS`;
+
+      if (saved.length === 0) {
+        list.innerHTML = `
+          <div class="mypage-empty">
+            <div class="mypage-empty-icon">🔖</div>
+            <div class="mypage-empty-text">저장된 뉴스가 없습니다.<br>NEWS 탭에서 책갈피를 추가해보세요.</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = saved.map(([title, { content, news_date }]) => `
+        <div class="mypage-item">
+          <div class="mypage-item-header" onclick="toggleMypageItem(this)">
+            <span class="mypage-toggle">▶</span>
+            <span class="mypage-date">${news_date}</span>
+            <span class="mypage-title">${title}</span>
+            <span class="mypage-bookmark">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </span>
+          </div>
+          <div class="mypage-item-body">${content}</div>
+        </div>`).join('');
+    }
+
+    window.toggleMypageItem = function(header) {
+      const body   = header.nextElementSibling;
+      const toggle = header.querySelector('.mypage-toggle');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      toggle.textContent = isOpen ? '▶' : '▼';
+      header.classList.toggle('open-header', !isOpen);
+    };
+
+    // ── 책갈피 토글 ───────────────────────────────────────
+    window.toggleBookmark = async function(event, btn, title) {
+      event.stopPropagation();
+      const isSaved = btn.classList.toggle('saved');
+
+      if (isSaved) {
+        const body     = btn.closest('.accordion-item').querySelector('.accordion-body');
+        const content  = body ? body.innerHTML.trim() : '';
+        const newsDate = new Date().toISOString().slice(0, 10);
+
+        const { data, error } = await supabase
+          .from('bookmarks')
+          .insert({ title, content, news_date: newsDate })
+          .select('id')
+          .single();
+
+        if (error) { console.error('저장 실패:', error); btn.classList.remove('saved'); return; }
+        bookmarks[title] = { content, news_date: newsDate.slice(5), db_id: data.id };
+      } else {
+        const entry = bookmarks[title];
+        if (entry?.db_id) {
+          const { error } = await supabase.from('bookmarks').delete().eq('id', entry.db_id);
+          if (error) { console.error('삭제 실패:', error); btn.classList.add('saved'); return; }
+        }
+        delete bookmarks[title];
+      }
+      renderMyPage();
+    };
+
+    // ── 초기 로드 ─────────────────────────────────────────
+    async function loadBookmarks() {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error('불러오기 실패:', error); return; }
+
+      data.forEach(row => {
+        bookmarks[row.title] = {
+          content:   row.content,
+          news_date: row.news_date.slice(5),
+          db_id:     row.id
+        };
+        document.querySelectorAll('.bookmark-btn').forEach(btn => {
+          const header = btn.closest('.accordion-header');
+          if (header?.querySelector('.accordion-title')?.textContent.trim() === row.title) {
+            btn.classList.add('saved');
+          }
+        });
+      });
+      renderMyPage();
+    }
+
+    loadBookmarks();
+  </script>
+
+</body>
+</html>
