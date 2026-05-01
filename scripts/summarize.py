@@ -64,6 +64,7 @@ def summarize(video_id, video_title):
 - brief: 오늘 영상에서 가장 중요한 뉴스 3가지, 각 20자 이내
 - items: 영상에서 다룬 주요 뉴스 5~10개, content는 2~3문단
 - 모든 내용은 한국어로 작성
+- 문체는 '~다', '~했다', '~없다' 형식의 신문 기사체로 통일
 """
 
     response = client.models.generate_content(
