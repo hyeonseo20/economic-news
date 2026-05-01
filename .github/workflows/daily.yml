@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 0 * * 1-5'   # 매주 월~금 00:00 UTC = 09:00 KST
   workflow_dispatch:          # 수동 실행 허용
+    inputs:
+      test_date:
+        description: '테스트 날짜 (예: 20260430). 비우면 오늘 날짜 사용.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -29,6 +34,7 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           GEMINI_API_KEY:  ${{ secrets.GEMINI_API_KEY }}
           NTFY_TOPIC:      ${{ secrets.NTFY_TOPIC }}
+          TEST_DATE:       ${{ github.event.inputs.test_date }}
         run: python scripts/summarize.py
 
       - name: index.html 커밋 & 푸시

@@ -24,7 +24,7 @@ DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 def get_today_video():
     """오늘 날짜의 영상을 플레이리스트에서 찾아 반환"""
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-    today   = datetime.now(KST).strftime('%Y%m%d')
+    today   = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
 
     response = youtube.playlistItems().list(
         part='snippet',
