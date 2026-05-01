@@ -96,12 +96,20 @@ def fetch_article(url):
     og_desc = soup.find('meta', property='og:description')
     desc_text = og_desc['content'].strip() if og_desc and og_desc.get('content') else ''
 
+    # 구체적인 선택자 → 일반 선택자 순으로 시도
     body = (
+        soup.find('div', class_=re.compile(r'article-body|newsct_article|article_txt|articleText', re.I)) or
         soup.find('div', class_=re.compile(r'article|content|body', re.I)) or
         soup.find('article')
     )
-    body_text = body.get_text(separator=' ', strip=True) if body else ''
-    body_text = re.sub(r'\s+', ' ', body_text)[:800]
+    if body:
+        body_text = body.get_text(separator=' ', strip=True)
+    else:
+        # fallback: 길이 있는 p 태그 수집
+        paras = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 30]
+        body_text = ' '.join(paras)
+
+    body_text = re.sub(r'\s+', ' ', body_text)[:1500]
 
     return f"{desc_text} {body_text}".strip() or '본문 없음'
 
