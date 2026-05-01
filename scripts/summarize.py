@@ -10,10 +10,13 @@ from datetime import datetime, timezone, timedelta
 import requests
 from bs4 import BeautifulSoup
 from groq import Groq
+from googleapiclient.discovery import build
 
 # ── 환경변수 ──────────────────────────────────────────────
-GROQ_API_KEY = os.environ['GROQ_API_KEY']
-NTFY_TOPIC   = os.environ.get('NTFY_TOPIC', '')
+GROQ_API_KEY    = os.environ['GROQ_API_KEY']
+YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', '')
+PLAYLIST_ID     = 'PLVups02-DZEWWyOMyk4jjGaWJ_0o1N1iO'
+NTFY_TOPIC      = os.environ.get('NTFY_TOPIC', '')
 
 KST  = timezone(timedelta(hours=9))
 DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
@@ -21,6 +24,26 @@ DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
 }
+
+
+def get_today_video():
+    """오늘 날짜의 YouTube 영상 ID와 제목을 반환"""
+    if not YOUTUBE_API_KEY:
+        return None
+    target_date = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
+    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+    response = youtube.playlistItems().list(
+        part='snippet', playlistId=PLAYLIST_ID, maxResults=5
+    ).execute()
+    for item in response['items']:
+        snippet = item['snippet']
+        title   = snippet['title']
+        if target_date in title:
+            return {
+                'video_id': snippet['resourceId']['videoId'],
+                'title':    title,
+            }
+    return None
 
 
 def get_articles():
@@ -123,7 +146,7 @@ def summarize(articles_data):
     return result
 
 
-def generate_html(summary):
+def generate_html(summary, video=None):
     """template.html을 채워 index.html 생성"""
     kst_now      = datetime.now(KST)
     date_display = f"{kst_now.strftime('%Y-%m-%d')} {DAYS[kst_now.weekday()]}"
@@ -152,10 +175,13 @@ def generate_html(summary):
     with open(os.path.join(root, 'template.html'), encoding='utf-8') as f:
         template = f.read()
 
+    video_id    = video['video_id'] if video else ''
+    video_title = video['title']   if video else f"한경 모닝루틴 {kst_now.strftime('%Y-%m-%d')}"
+
     html = template
     html = html.replace('{{DATE_DISPLAY}}',  date_display)
-    html = html.replace('{{VIDEO_ID}}',      '')
-    html = html.replace('{{VIDEO_TITLE}}',   f"한경 모닝루틴 {kst_now.strftime('%Y-%m-%d')}")
+    html = html.replace('{{VIDEO_ID}}',      video_id)
+    html = html.replace('{{VIDEO_TITLE}}',   video_title)
     html = html.replace('{{BRIEF_ITEMS}}',   brief_html)
     html = html.replace('{{NEWS_ITEMS}}',    items_html)
     html = html.replace('{{TOTAL_COUNT}}',   str(len(summary['items'])))
@@ -208,7 +234,8 @@ def main():
     print(f'     요약 완료: {len(summary["items"])}개 항목')
 
     print('[4/4] HTML 생성 및 알림 전송 중...')
-    generate_html(summary)
+    video = get_today_video()
+    generate_html(summary, video)
     send_notification(datetime.now(KST).strftime('%Y-%m-%d'))
     print('     완료!')
 
