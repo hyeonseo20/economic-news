@@ -6,8 +6,8 @@
 import os
 import json
 import re
+import shutil
 from datetime import datetime, timezone, timedelta
-import html as html_lib
 import requests
 from bs4 import BeautifulSoup
 from groq import Groq
@@ -67,7 +67,6 @@ def get_articles():
         if href in seen:
             continue
 
-        # 제목: 링크 텍스트 → 부모 heading 텍스트 순으로 시도
         title = a.get_text(strip=True)
         if not title:
             for tag in ['h1', 'h2', 'h3', 'h4']:
@@ -161,44 +160,49 @@ def summarize(articles_data):
     return result
 
 
-def generate_html(summary, video=None):
-    """template.html을 채워 index.html 생성"""
-    kst_now      = datetime.now(KST)
-    date_display = f"{kst_now.strftime('%Y-%m-%d')} {DAYS[kst_now.weekday()]}"
-
-    items_html = ''.join(
-        f'''<div class="accordion-item">
-          <div class="accordion-header" onclick="toggle(this)">
-            <span class="accordion-toggle">▶</span>
-            <span class="accordion-num">{str(i+1).zfill(2)}</span>
-            <span class="accordion-title">{item["title"]}</span>
-            <button class="bookmark-btn" data-title="{html_lib.escape(item['title'])}" onclick="toggleBookmark(event, this)">
-              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
-            </button>
-          </div>
-          <div class="accordion-body">{item["content"]}</div>
-        </div>'''
-        for i, item in enumerate(summary['items'])
+def save_json(summary, video, target_date):
+    """요약 데이터를 data/YYYYMMDD.json으로 저장, index.json 업데이트"""
+    td = datetime(
+        int(target_date[:4]), int(target_date[4:6]), int(target_date[6:8]),
+        tzinfo=KST
     )
+    date_display = f"{td.strftime('%Y-%m-%d')} {DAYS[td.weekday()]}"
 
+    data = {
+        'date_display': date_display,
+        'video_id':    video['video_id'] if video else '',
+        'video_title': video['title']    if video else f"한경 모닝루틴 {td.strftime('%Y-%m-%d')}",
+        'items':       [{'title': item['title'], 'content': item['content']}
+                        for item in summary['items']],
+    }
+
+    root     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_dir = os.path.join(root, 'data')
+    os.makedirs(data_dir, exist_ok=True)
+
+    with open(os.path.join(data_dir, f'{target_date}.json'), 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f'   → data/{target_date}.json 저장 완료')
+
+    index_path = os.path.join(data_dir, 'index.json')
+    index = []
+    if os.path.exists(index_path):
+        with open(index_path, encoding='utf-8') as f:
+            index = json.load(f)
+    if target_date not in index:
+        index.insert(0, target_date)
+    with open(index_path, 'w', encoding='utf-8') as f:
+        json.dump(index, f, ensure_ascii=False)
+    print(f'   → data/index.json 업데이트 ({len(index)}개 날짜)')
+
+
+def ensure_index_html():
+    """index.html이 없으면 template.html에서 생성"""
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    with open(os.path.join(root, 'template.html'), encoding='utf-8') as f:
-        template = f.read()
-
-    video_id    = video['video_id'] if video else ''
-    video_title = video['title']   if video else f"한경 모닝루틴 {kst_now.strftime('%Y-%m-%d')}"
-
-    html = template
-    html = html.replace('{{DATE_DISPLAY}}',  date_display)
-    html = html.replace('{{VIDEO_ID}}',      video_id)
-    html = html.replace('{{VIDEO_TITLE}}',   video_title)
-    html = html.replace('{{NEWS_ITEMS}}',    items_html)
-    html = html.replace('{{TOTAL_COUNT}}',   str(len(summary['items'])))
-
-    out = os.path.join(root, 'index.html')
-    with open(out, 'w', encoding='utf-8') as f:
-        f.write(html)
-    print(f'   → {out} 저장 완료')
+    dst  = os.path.join(root, 'index.html')
+    if not os.path.exists(dst):
+        shutil.copy(os.path.join(root, 'template.html'), dst)
+        print('   → index.html 생성 완료')
 
 
 def send_notification(date):
@@ -216,6 +220,7 @@ def send_notification(date):
 
 def main():
     print('── 한경 모닝루틴 요약 시작 ──────────────')
+    target_date = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
 
     print('[1/4] 기사 목록 가져오는 중...')
     articles = get_articles()
@@ -241,9 +246,10 @@ def main():
     summary = summarize(articles_data)
     print(f'     요약 완료: {len(summary["items"])}개 항목')
 
-    print('[4/4] HTML 생성 및 알림 전송 중...')
+    print('[4/4] JSON 저장 및 알림 전송 중...')
     video = get_today_video()
-    generate_html(summary, video)
+    save_json(summary, video, target_date)
+    ensure_index_html()
     send_notification(datetime.now(KST).strftime('%Y-%m-%d'))
     print('     완료!')
 

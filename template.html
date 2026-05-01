@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>한경 모닝루틴 — {{DATE_DISPLAY}}</title>
+  <title>한경 모닝루틴</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -350,6 +350,8 @@
       max-width: 480px;
       margin: 0 auto;
       border-top: 1px solid #30363d;
+      max-height: 70vh;
+      overflow-y: auto;
     }
 
     .modal-header {
@@ -361,6 +363,9 @@
       font-size: 14px;
       font-weight: 700;
       color: #e6edf3;
+      position: sticky;
+      top: 0;
+      background: #161b22;
     }
 
     .modal-close {
@@ -405,7 +410,7 @@
     <div>
       <div class="header-eyebrow">KOREA MARKET</div>
       <div class="header-title">한경 모닝루틴</div>
-      <div class="header-date">{{DATE_DISPLAY}}</div>
+      <div class="header-date" id="header-date">로딩 중...</div>
     </div>
     <button class="date-btn" onclick="openDateModal()">날짜 선택 ▼</button>
   </div>
@@ -415,25 +420,23 @@
     <div class="tab" onclick="switchTab('mypage')">MY PAGE</div>
   </div>
 
-  <!-- NEWS 탭 콘텐츠 -->
+  <!-- NEWS 탭 -->
   <div class="tab-content active" id="tab-news">
 
-    <a href="https://www.youtube.com/watch?v={{VIDEO_ID}}" target="_blank" class="thumbnail">
-      <img src="https://img.youtube.com/vi/{{VIDEO_ID}}/hqdefault.jpg"
-           alt="{{VIDEO_TITLE}}"
+    <a href="#" target="_blank" class="thumbnail" id="thumbnail-link">
+      <img id="thumbnail-img" src="" alt=""
            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
       <div class="thumbnail-inner">
         <div class="play-btn"><div class="play-icon"></div></div>
       </div>
     </a>
 
-    <div class="news-count-bar">TOTAL {{TOTAL_COUNT}} ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다</div>
-
-    {{NEWS_ITEMS}}
+    <div class="news-count-bar" id="news-count-bar">로딩 중...</div>
+    <div id="news-items"></div>
 
   </div>
 
-  <!-- MY PAGE 탭 콘텐츠 -->
+  <!-- MY PAGE 탭 -->
   <div class="tab-content" id="tab-mypage">
     <div class="mypage-count-bar" id="mypage-count">SAVED 0 ITEMS</div>
     <div id="mypage-list">
@@ -451,28 +454,109 @@
         날짜 선택
         <button class="modal-close" onclick="closeDateModal()">✕ 닫기</button>
       </div>
-      <ul class="date-list">
-        <li class="today">
-          {{DATE_DISPLAY}} — 오늘
-          <span class="today-badge">TODAY</span>
-        </li>
+      <ul class="date-list" id="date-list">
+        <li style="color:#8b949e;">로딩 중...</li>
       </ul>
     </div>
   </div>
 
   <script>
+    const WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
     const STORAGE_KEY = 'hankyung_bookmarks';
 
     function loadFromStorage() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
       catch { return {}; }
     }
-
     function saveToStorage(bm) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bm));
     }
-
     const bookmarks = loadFromStorage();
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+    }
+
+    // ── 데이터 로드 ───────────────────────────────────────
+    async function init() {
+      try {
+        const res = await fetch('data/index.json');
+        if (!res.ok) throw new Error('index.json 없음');
+        const dates = await res.json();
+        renderDateList(dates);
+        if (dates.length > 0) await loadDate(dates[0]);
+      } catch(e) {
+        document.getElementById('news-count-bar').textContent = '데이터를 불러올 수 없습니다.';
+        console.error(e);
+      }
+    }
+
+    async function loadDate(dateStr) {
+      const res = await fetch(`data/${dateStr}.json`);
+      if (!res.ok) throw new Error(`${dateStr}.json 없음`);
+      const data = await res.json();
+      renderPage(data);
+    }
+
+    function renderPage(data) {
+      document.getElementById('header-date').textContent = data.date_display;
+
+      const thumbLink = document.getElementById('thumbnail-link');
+      if (data.video_id) {
+        thumbLink.style.display = '';
+        thumbLink.href = `https://www.youtube.com/watch?v=${data.video_id}`;
+        const img = document.getElementById('thumbnail-img');
+        img.src = `https://img.youtube.com/vi/${data.video_id}/hqdefault.jpg`;
+        img.alt = data.video_title;
+      } else {
+        thumbLink.style.display = 'none';
+      }
+
+      document.getElementById('news-count-bar').textContent =
+        `TOTAL ${data.items.length} ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다`;
+
+      document.getElementById('news-items').innerHTML = data.items.map((item, i) => `
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggle(this)">
+            <span class="accordion-toggle">▶</span>
+            <span class="accordion-num">${String(i + 1).padStart(2, '0')}</span>
+            <span class="accordion-title">${escapeHtml(item.title)}</span>
+            <button class="bookmark-btn" data-title="${escapeHtml(item.title)}" onclick="toggleBookmark(event, this)">
+              <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
+            </button>
+          </div>
+          <div class="accordion-body">${item.content}</div>
+        </div>`).join('');
+
+      document.querySelectorAll('.bookmark-btn').forEach(btn => {
+        if (bookmarks[btn.dataset.title]) btn.classList.add('saved');
+      });
+    }
+
+    function renderDateList(dates) {
+      document.getElementById('date-list').innerHTML = dates.map((d, i) => {
+        const y = d.slice(0, 4), m = d.slice(4, 6), day = d.slice(6, 8);
+        const dateObj = new Date(`${y}-${m}-${day}T00:00:00+09:00`);
+        const label = `${y}-${m}-${day} ${WEEK[dateObj.getDay()]}`;
+        return `<li class="${i === 0 ? 'today' : ''}" onclick="selectDate('${d}')">
+          ${label}
+          ${i === 0 ? '<span class="today-badge">TODAY</span>' : ''}
+        </li>`;
+      }).join('');
+    }
+
+    window.selectDate = async function(dateStr) {
+      closeDateModal();
+      document.querySelectorAll('.accordion-body.open').forEach(b => {
+        b.classList.remove('open');
+        const h = b.previousElementSibling;
+        h.querySelector('.accordion-toggle').textContent = '▶';
+        h.classList.remove('open-header');
+      });
+      await loadDate(dateStr);
+    };
 
     // ── 날짜 모달 ─────────────────────────────────────────
     window.openDateModal = function() {
@@ -499,7 +583,6 @@
       const body   = header.nextElementSibling;
       const isOpen = body.classList.contains('open');
 
-      // 다른 열린 항목 모두 닫기
       document.querySelectorAll('.accordion-body.open').forEach(b => {
         b.classList.remove('open');
         const h = b.previousElementSibling;
@@ -535,7 +618,7 @@
           <div class="mypage-item-header" onclick="toggleMypageItem(this)">
             <span class="mypage-toggle">▶</span>
             <span class="mypage-date">${news_date}</span>
-            <span class="mypage-title">${title}</span>
+            <span class="mypage-title">${escapeHtml(title)}</span>
             <span class="mypage-bookmark">
               <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
             </span>
@@ -562,7 +645,7 @@
       if (isSaved) {
         const body    = btn.closest('.accordion-item').querySelector('.accordion-body');
         const content = body ? body.innerHTML.trim() : '';
-        const today   = new Date().toISOString().slice(5, 10); // MM-DD
+        const today   = new Date().toISOString().slice(5, 10);
         bookmarks[title] = { content, news_date: today };
       } else {
         delete bookmarks[title];
@@ -572,12 +655,8 @@
       renderMyPage();
     };
 
-    // ── 초기 로드: 저장된 책갈피 버튼 상태 복원 ──────────
-    document.querySelectorAll('.bookmark-btn').forEach(btn => {
-      if (bookmarks[btn.dataset.title]) btn.classList.add('saved');
-    });
-
     renderMyPage();
+    init();
   </script>
 
 </body>

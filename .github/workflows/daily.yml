@@ -37,14 +37,10 @@ jobs:
           TEST_DATE:       ${{ github.event.inputs.test_date }}
         run: python scripts/summarize.py
 
-      - name: index.html 커밋 & 푸시
+      - name: 결과 커밋 & 푸시
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ ! -f index.html ]; then
-            echo "index.html 없음. 커밋 건너뜀."
-            exit 0
-          fi
-          git add index.html
+          git add data/ index.html
           git diff --cached --quiet || git commit -m "chore: $(date +'%Y-%m-%d') 모닝루틴 요약 업데이트"
           git push
