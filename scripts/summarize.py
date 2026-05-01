@@ -24,14 +24,18 @@ HEADERS = {
 
 
 def get_articles():
-    """hankyung.com/mr에서 오늘의 기사 URL 목록을 가져옴"""
-    res  = requests.get('https://www.hankyung.com/mr', headers=HEADERS, timeout=15)
+    """hankyung.com/mr에서 해당 날짜의 기사 URL 목록을 가져옴"""
+    target_date = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
+    print(f'     대상 날짜: {target_date}')
+
+    url  = f'https://www.hankyung.com/mr?date={target_date}'
+    res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
     seen, urls = set(), []
     for a in soup.find_all('a', href=True):
         href = a['href']
-        if re.search(r'/article/\d+', href):
+        if re.search(r'/article/\w+', href):
             if href.startswith('/'):
                 href = 'https://www.hankyung.com' + href
             href = href.split('?')[0]
