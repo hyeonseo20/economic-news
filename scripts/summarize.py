@@ -52,17 +52,23 @@ def fetch_article(url):
     res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
-    title = soup.find('h1') or soup.find('h2')
-    title_text = title.get_text(strip=True) if title else ''
+    # og:title에서 제목 추출
+    og_title = soup.find('meta', property='og:title')
+    title_text = og_title['content'].strip() if og_title else ''
+
+    # og:description 또는 본문에서 내용 추출
+    og_desc = soup.find('meta', property='og:description')
+    desc_text = og_desc['content'].strip() if og_desc else ''
 
     body = (
         soup.find('div', class_=re.compile(r'article|content|body', re.I)) or
         soup.find('article')
     )
     body_text = body.get_text(separator=' ', strip=True) if body else ''
-    body_text = re.sub(r'\s+', ' ', body_text)[:3000]
+    body_text = re.sub(r'\s+', ' ', body_text)[:1200]
 
-    return title_text, body_text
+    combined = f"{desc_text} {body_text}".strip()
+    return title_text, combined
 
 
 def summarize(articles_data):
