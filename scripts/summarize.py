@@ -8,8 +8,8 @@ import json
 import re
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build
-import vertexai
-from vertexai.generative_models import GenerativeModel, Part
+from google import genai
+from google.genai import types
 import requests
 
 # ── 환경변수 ──────────────────────────────────────────────
@@ -48,8 +48,11 @@ def get_today_video():
 
 def summarize(video_id, video_title):
     """Vertex AI Gemini로 YouTube 영상을 직접 요약 — JSON 반환"""
-    vertexai.init(project=GCP_PROJECT_ID, location=GCP_LOCATION)
-    model = GenerativeModel('gemini-2.0-flash-001')
+    client = genai.Client(
+        vertexai=True,
+        project=GCP_PROJECT_ID,
+        location=GCP_LOCATION
+    )
 
     prompt = f"""다음은 한국경제신문 뉴스 영상입니다.
 영상 제목: {video_title}
@@ -69,13 +72,16 @@ def summarize(video_id, video_title):
 - 모든 내용은 한국어로 작성
 """
 
-    response = model.generate_content([
-        Part.from_uri(
-            uri=f'https://www.youtube.com/watch?v={video_id}',
-            mime_type='video/mp4'
-        ),
-        prompt
-    ])
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents=[
+            types.Part.from_uri(
+                file_uri=f'https://www.youtube.com/watch?v={video_id}',
+                mime_type='video/mp4'
+            ),
+            prompt
+        ]
+    )
 
     text  = response.text.strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
