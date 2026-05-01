@@ -7,6 +7,7 @@ import os
 import json
 import re
 from datetime import datetime, timezone, timedelta
+import html as html_lib
 import requests
 from bs4 import BeautifulSoup
 from groq import Groq
@@ -170,7 +171,7 @@ def generate_html(summary, video=None):
             <span class="accordion-toggle">▶</span>
             <span class="accordion-num">{str(i+1).zfill(2)}</span>
             <span class="accordion-title">{item["title"]}</span>
-            <button class="bookmark-btn" onclick="toggleBookmark(event, this, {json.dumps(item['title'], ensure_ascii=False)})">
+            <button class="bookmark-btn" data-title="{html_lib.escape(item['title'])}" onclick="toggleBookmark(event, this)">
               <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
             </button>
           </div>
