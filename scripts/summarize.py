@@ -83,7 +83,17 @@ def summarize(video_id, video_title):
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
-    return json.loads(match.group())
+    result = json.loads(match.group())
+
+    seen, deduped = set(), []
+    for item in result.get('items', []):
+        key = re.sub(r'\s+', '', item['title'])
+        if key not in seen:
+            seen.add(key)
+            deduped.append(item)
+    result['items'] = deduped
+
+    return result
 
 
 def generate_html(video_info, summary):
