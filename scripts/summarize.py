@@ -117,12 +117,13 @@ def summarize(articles_data):
 
 {{
   "items": [
-    {{"title": "뉴스 항목 제목", "content": "요약 내용"}}
+    {{"article_num": 1, "content": "요약 내용"}}
   ]
 }}
 
 규칙:
-- items: 각 기사마다 하나의 항목, title은 반드시 제공된 [기사 N] 제목을 그대로 사용할 것 (절대 수정 금지), content는 4~5문장으로 요약
+- items: 각 기사마다 하나의 항목, article_num은 반드시 해당 [기사 N]의 숫자 N을 그대로 사용할 것
+- content는 4~5문장으로 요약
 - 반드시 제공된 기사 내용만 사용할 것. 기사에 없는 내용 추가 금지
 - 동일하거나 유사한 주제는 하나의 항목으로만 작성
 - 문체는 '~다', '~했다' 형식의 신문 기사체로 통일
@@ -142,19 +143,17 @@ def summarize(articles_data):
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
     result = json.loads(match.group())
 
-    # 중복 제거
+    # article_num 기준으로 원본 제목 교체 + 중복 제거
     seen, deduped = set(), []
     for item in result.get('items', []):
-        key = re.sub(r'\s+', '', item['title'])
-        if key not in seen:
-            seen.add(key)
-            deduped.append(item)
-
-    # 원본 제목으로 강제 교체
-    original_titles = [title for title, _ in articles_data]
-    for i, item in enumerate(deduped):
-        if i < len(original_titles):
-            item['title'] = original_titles[i]
+        num = item.get('article_num')
+        if not isinstance(num, int) or not (1 <= num <= len(articles_data)):
+            continue
+        if num in seen:
+            continue
+        seen.add(num)
+        item['title'] = articles_data[num - 1][0]
+        deduped.append(item)
 
     result['items'] = deduped
     return result
