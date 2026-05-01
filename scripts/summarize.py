@@ -135,14 +135,21 @@ def summarize(articles_data):
         raise ValueError(f'JSON 파싱 실패: {text[:200]}')
     result = json.loads(match.group())
 
+    # 중복 제거
     seen, deduped = set(), []
     for item in result.get('items', []):
         key = re.sub(r'\s+', '', item['title'])
         if key not in seen:
             seen.add(key)
             deduped.append(item)
-    result['items'] = deduped
 
+    # 원본 제목으로 강제 교체
+    original_titles = [title for title, _ in articles_data]
+    for i, item in enumerate(deduped):
+        if i < len(original_titles):
+            item['title'] = original_titles[i]
+
+    result['items'] = deduped
     return result
 
 
