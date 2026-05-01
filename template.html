@@ -529,11 +529,21 @@
     // ── 아코디언 ──────────────────────────────────────────
     window.toggle = function(header) {
       const body   = header.nextElementSibling;
-      const icon   = header.querySelector('.accordion-toggle');
       const isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      icon.textContent = isOpen ? '▶' : '▼';
-      header.classList.toggle('open-header', !isOpen);
+
+      // 다른 열린 항목 모두 닫기
+      document.querySelectorAll('.accordion-body.open').forEach(b => {
+        b.classList.remove('open');
+        const h = b.previousElementSibling;
+        h.querySelector('.accordion-toggle').textContent = '▶';
+        h.classList.remove('open-header');
+      });
+
+      if (!isOpen) {
+        body.classList.add('open');
+        header.querySelector('.accordion-toggle').textContent = '▼';
+        header.classList.add('open-header');
+      }
     };
 
     // ── MY PAGE 렌더링 ────────────────────────────────────
