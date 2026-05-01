@@ -189,7 +189,7 @@ def save_json(summary, video, target_date):
     if os.path.exists(index_path):
         with open(index_path, encoding='utf-8') as f:
             index = json.load(f)
-    if target_date not in index:
+    if target_date not in index and td.weekday() < 5:  # 평일만 추가
         index.insert(0, target_date)
     with open(index_path, 'w', encoding='utf-8') as f:
         json.dump(index, f, ensure_ascii=False)
