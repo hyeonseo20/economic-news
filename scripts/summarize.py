@@ -73,7 +73,7 @@ def summarize(video_id, video_title):
 """
 
     response = client.models.generate_content(
-        model='gemini-1.5-flash-002',
+        model='gemini-2.0-flash-001',
         contents=[
             types.Part.from_uri(
                 file_uri=f'https://www.youtube.com/watch?v={video_id}',
