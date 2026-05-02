@@ -59,11 +59,15 @@ def get_articles():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent=HEADERS['User-Agent'])
-        page.goto('https://www.hankyung.com/mr', wait_until='networkidle', timeout=30000)
+        page.goto('https://www.hankyung.com/mr', wait_until='domcontentloaded', timeout=30000)
 
-        date_btn = page.get_by_text(date_label, exact=True).first
-        date_btn.click()
-        page.wait_for_load_state('networkidle', timeout=15000)
+        # 날짜 버튼이 DOM에 나타날 때까지 대기
+        page.wait_for_selector(f'text={date_label}', timeout=15000)
+        page.get_by_text(date_label, exact=True).first.click()
+
+        # 클릭 후 기사 링크가 갱신될 때까지 대기
+        page.wait_for_selector('a[href*="/article/"]', timeout=15000)
+        page.wait_for_timeout(2000)
 
         content = page.content()
         browser.close()
