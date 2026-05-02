@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta, date
 import requests
 from bs4 import BeautifulSoup
 from groq import Groq
+from playwright.sync_api import sync_playwright
 from googleapiclient.discovery import build
 
 # ── 환경변수 ──────────────────────────────────────────────
@@ -48,13 +49,25 @@ def get_today_video():
 
 
 def get_articles():
-    """hankyung.com/mr에서 해당 날짜의 기사 (제목, URL) 목록을 가져옴"""
+    """hankyung.com/mr에서 날짜 버튼을 클릭해 해당 날짜의 기사 (제목, URL) 목록을 가져옴"""
     target_date = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
-    print(f'     대상 날짜: {target_date}')
+    td = datetime.strptime(target_date, '%Y%m%d')
+    date_label = f"{td.month:02d}월 {td.day:02d}일"
+    print(f'     대상 날짜: {target_date} ({date_label})')
 
-    url  = f'https://www.hankyung.com/mr?date={target_date}'
-    res  = requests.get(url, headers=HEADERS, timeout=15)
-    soup = BeautifulSoup(res.text, 'html.parser')
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page(user_agent=HEADERS['User-Agent'])
+        page.goto('https://www.hankyung.com/mr', wait_until='networkidle', timeout=30000)
+
+        date_btn = page.get_by_text(date_label, exact=True).first
+        date_btn.click()
+        page.wait_for_load_state('networkidle', timeout=15000)
+
+        content = page.content()
+        browser.close()
+
+    soup = BeautifulSoup(content, 'html.parser')
 
     seen, articles = set(), []
     for a in soup.find_all('a', href=True):

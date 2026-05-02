@@ -540,7 +540,7 @@
         const dateObj = new Date(`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}T00:00:00+09:00`);
         const day = dateObj.getDay();
         return day !== 0 && day !== 6; // 토·일 제외
-      });
+      }).slice(0, 5);
       document.getElementById('date-list').innerHTML = weekdays.map((d, i) => {
         const y = d.slice(0, 4), m = d.slice(4, 6), day = d.slice(6, 8);
         const dateObj = new Date(`${y}-${m}-${day}T00:00:00+09:00`);
