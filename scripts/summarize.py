@@ -114,7 +114,7 @@ def fetch_article(url):
         paras = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 30]
         body_text = ' '.join(paras)
 
-    return re.sub(r'\s+', ' ', body_text)[:1500] or '본문 없음'
+    return re.sub(r'\s+', ' ', body_text) or '본문 없음'
 
 
 def summarize(articles_data):
@@ -124,7 +124,7 @@ def summarize(articles_data):
 
     for i, (title, body) in enumerate(articles_data):
         if i > 0:
-            time.sleep(8)
+            time.sleep(30)
 
         prompt = f"""다음은 한국경제신문 기사입니다.
 
