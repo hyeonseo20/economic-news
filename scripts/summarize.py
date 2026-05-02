@@ -50,13 +50,9 @@ def get_today_video():
 def get_articles():
     """hankyung.com/mr에서 해당 날짜의 기사 (제목, URL) 목록을 가져옴"""
     target_date = os.environ.get('TEST_DATE') or datetime.now(KST).strftime('%Y%m%d')
+    print(f'     대상 날짜: {target_date}')
 
-    # 사이트의 ?date= 파라미터는 게재일 기준이므로, 모닝루틴 날짜보다 하루 전 기사를 가져와야 함
-    td = datetime.strptime(target_date, '%Y%m%d')
-    article_date = (td - timedelta(days=1)).strftime('%Y%m%d')
-    print(f'     대상 날짜: {target_date} (기사 조회일: {article_date})')
-
-    url  = f'https://www.hankyung.com/mr?date={article_date}'
+    url  = f'https://www.hankyung.com/mr?date={target_date}'
     res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
