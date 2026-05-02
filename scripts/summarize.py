@@ -7,6 +7,7 @@ import os
 import json
 import re
 import shutil
+import time
 from datetime import datetime, timezone, timedelta, date
 import requests
 from bs4 import BeautifulSoup
@@ -102,10 +103,6 @@ def fetch_article(url):
     res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
-    og_desc = soup.find('meta', property='og:description')
-    desc_text = og_desc['content'].strip() if og_desc and og_desc.get('content') else ''
-
-    # 구체적인 선택자 → 일반 선택자 순으로 시도
     body = (
         soup.find('div', class_=re.compile(r'article-body|newsct_article|article_txt|articleText', re.I)) or
         soup.find('div', class_=re.compile(r'article|content|body', re.I)) or
@@ -114,71 +111,56 @@ def fetch_article(url):
     if body:
         body_text = body.get_text(separator=' ', strip=True)
     else:
-        # fallback: 길이 있는 p 태그 수집
         paras = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 30]
         body_text = ' '.join(paras)
 
-    body_text = re.sub(r'\s+', ' ', body_text)[:1000]
-
-    return f"{desc_text} {body_text}".strip() or '본문 없음'
+    return re.sub(r'\s+', ' ', body_text)[:1500] or '본문 없음'
 
 
 def summarize(articles_data):
-    """Groq으로 기사 목록을 요약 — JSON 반환"""
-    combined = '\n\n'.join(
-        f'[기사 {i+1}] {title}\n{body}'
-        for i, (title, body) in enumerate(articles_data)
-    )
+    """기사별 개별 Groq 호출로 요약 (TPM 분산을 위해 호출 간 8초 대기)"""
+    client = Groq(api_key=GROQ_API_KEY)
+    items  = []
 
-    prompt = f"""다음은 한국경제신문 모닝루틴 Pick 기사들입니다.
+    for i, (title, body) in enumerate(articles_data):
+        if i > 0:
+            time.sleep(8)
 
-{combined}
+        prompt = f"""다음은 한국경제신문 기사입니다.
+
+제목: {title}
+본문: {body}
 
 아래 JSON 형식으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
-{{
-  "items": [
-    {{"article_num": 1, "content": "요약 내용"}}
-  ]
-}}
+{{"content": "요약 내용"}}
 
 규칙:
-- items: 제공된 모든 기사에 대해 빠짐없이 하나씩 항목을 만들 것 (기사 수 = items 수)
-- article_num은 반드시 해당 [기사 N]의 숫자 N을 그대로 사용할 것
 - content는 4~5문장으로 요약
+- 첫 문장에 기사 제목을 그대로 반복하지 말 것. 제목에 없는 새로운 사실·수치·원인부터 시작할 것
+- 구체적인 수치, 인물, 날짜, 원인을 반드시 포함할 것
 - 반드시 제공된 기사 내용만 사용할 것. 기사에 없는 내용 추가 금지
-- 기사를 합치거나 생략하지 말 것
 - 문체는 '~다', '~했다' 형식의 신문 기사체로 통일
-- 모든 내용은 반드시 한국어로만 작성. 일본어·중국어·영어 등 다른 언어 절대 사용 금지
+- 반드시 한국어로만 작성. 일본어·중국어·영어 등 다른 언어 절대 사용 금지
 """
 
-    client = Groq(api_key=GROQ_API_KEY)
-    response = client.chat.completions.create(
-        model='llama-3.3-70b-versatile',
-        max_tokens=2000,
-        messages=[{'role': 'user', 'content': prompt}]
-    )
+        try:
+            response = client.chat.completions.create(
+                model='llama-3.3-70b-versatile',
+                max_tokens=400,
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            text  = response.choices[0].message.content.strip()
+            match = re.search(r'\{.*\}', text, re.DOTALL)
+            if not match:
+                raise ValueError(f'JSON 파싱 실패: {text[:200]}')
+            content = json.loads(match.group()).get('content', '')
+            items.append({'title': title, 'content': content})
+            print(f'     ✓ [{i+1}/{len(articles_data)}] {title[:35]}')
+        except Exception as e:
+            print(f'     ✗ [{i+1}/{len(articles_data)}] {title[:35]} — {e}')
 
-    text  = response.choices[0].message.content.strip()
-    match = re.search(r'\{.*\}', text, re.DOTALL)
-    if not match:
-        raise ValueError(f'JSON 파싱 실패: {text[:200]}')
-    result = json.loads(match.group())
-
-    # article_num 기준으로 원본 제목 교체 + 중복 제거
-    seen, deduped = set(), []
-    for item in result.get('items', []):
-        num = item.get('article_num')
-        if not isinstance(num, int) or not (1 <= num <= len(articles_data)):
-            continue
-        if num in seen:
-            continue
-        seen.add(num)
-        item['title'] = articles_data[num - 1][0]
-        deduped.append(item)
-
-    result['items'] = deduped
-    return result
+    return {'items': items}
 
 
 def save_json(summary, video, target_date):
