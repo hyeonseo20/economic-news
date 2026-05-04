@@ -121,6 +121,19 @@ def fetch_article(url):
     return re.sub(r'\s+', ' ', body_text) or '본문 없음'
 
 
+def has_hallucination(content, body):
+    """요약에 원문에 없는 한자·영어·일본어가 포함됐는지 검사"""
+    if re.search(r'[぀-ヿ]', content):  # 일본어(히라가나·가타카나): 항상 오류
+        return True
+    for ch in re.findall(r'[一-鿿㐀-䶿]', content):  # 한자: 원문에 없으면 오류
+        if ch not in body:
+            return True
+    for word in re.findall(r'[a-zA-Z]{3,}', content):  # 영어 단어(3자+): 원문에 없으면 오류
+        if word.lower() not in body.lower():
+            return True
+    return False
+
+
 def summarize(articles_data):
     """기사별 개별 Groq 호출로 요약 (TPM 분산을 위해 호출 간 8초 대기)"""
     client = Groq(api_key=GROQ_API_KEY)
@@ -148,17 +161,27 @@ def summarize(articles_data):
 - 반드시 한국어로만 작성. 일본어·중국어·영어 등 다른 언어 절대 사용 금지
 """
 
+        content = ''
+        MAX_RETRIES = 2
         try:
-            response = client.chat.completions.create(
-                model='llama-3.3-70b-versatile',
-                max_tokens=400,
-                messages=[{'role': 'user', 'content': prompt}]
-            )
-            text  = response.choices[0].message.content.strip()
-            match = re.search(r'\{.*\}', text, re.DOTALL)
-            if not match:
-                raise ValueError(f'JSON 파싱 실패: {text[:200]}')
-            content = json.loads(match.group()).get('content', '')
+            for attempt in range(MAX_RETRIES + 1):
+                if attempt > 0:
+                    print(f'       재시도 {attempt}/{MAX_RETRIES} (할루시네이션 감지)...')
+                    time.sleep(15)
+                response = client.chat.completions.create(
+                    model='llama-3.3-70b-versatile',
+                    max_tokens=400,
+                    messages=[{'role': 'user', 'content': prompt}]
+                )
+                text  = response.choices[0].message.content.strip()
+                match = re.search(r'\{.*\}', text, re.DOTALL)
+                if not match:
+                    raise ValueError(f'JSON 파싱 실패: {text[:200]}')
+                content = json.loads(match.group()).get('content', '')
+                if not has_hallucination(content, body):
+                    break
+                if attempt == MAX_RETRIES:
+                    print(f'       경고: 할루시네이션 제거 실패, 마지막 결과 사용')
             items.append({'title': title, 'content': content, 'url': url})
             print(f'     ✓ [{i+1}/{len(articles_data)}] {title[:35]}')
         except Exception as e:
