@@ -489,7 +489,7 @@
     // ── 데이터 로드 ───────────────────────────────────────
     async function init() {
       try {
-        const res = await fetch('data/index.json');
+        const res = await fetch(`data/index.json?t=${Date.now()}`);
         if (!res.ok) throw new Error('index.json 없음');
         const dates = await res.json();
         renderDateList(dates);
@@ -501,7 +501,7 @@
     }
 
     async function loadDate(dateStr) {
-      const res = await fetch(`data/${dateStr}.json`);
+      const res = await fetch(`data/${dateStr}.json?t=${Date.now()}`);
       if (!res.ok) throw new Error(`${dateStr}.json 없음`);
       const data = await res.json();
       renderPage(data);
