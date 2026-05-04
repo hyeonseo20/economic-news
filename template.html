@@ -191,6 +191,13 @@
       line-height: 1.4;
     }
 
+    .accordion-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .accordion-title a:hover { color: #00C896; }
+
     /* 책갈피 버튼 */
     .bookmark-btn {
       background: none;
@@ -522,7 +529,11 @@
           <div class="accordion-header" onclick="toggle(this)">
             <span class="accordion-toggle">▶</span>
             <span class="accordion-num">${String(i + 1).padStart(2, '0')}</span>
-            <span class="accordion-title">${escapeHtml(item.title)}</span>
+            <span class="accordion-title">
+              ${item.url
+                ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${escapeHtml(item.title)}</a>`
+                : escapeHtml(item.title)}
+            </span>
             <button class="bookmark-btn" data-title="${escapeHtml(item.title)}" onclick="toggleBookmark(event, this)">
               <svg viewBox="0 0 14 18"><path d="M1 1h12v16l-6-3-6 3V1z"/></svg>
             </button>

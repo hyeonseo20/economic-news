@@ -126,7 +126,7 @@ def summarize(articles_data):
     client = Groq(api_key=GROQ_API_KEY)
     items  = []
 
-    for i, (title, body) in enumerate(articles_data):
+    for i, (title, body, url) in enumerate(articles_data):
         if i > 0:
             time.sleep(30)
 
@@ -159,7 +159,7 @@ def summarize(articles_data):
             if not match:
                 raise ValueError(f'JSON 파싱 실패: {text[:200]}')
             content = json.loads(match.group()).get('content', '')
-            items.append({'title': title, 'content': content})
+            items.append({'title': title, 'content': content, 'url': url})
             print(f'     ✓ [{i+1}/{len(articles_data)}] {title[:35]}')
         except Exception as e:
             print(f'     ✗ [{i+1}/{len(articles_data)}] {title[:35]} — {e}')
@@ -179,7 +179,7 @@ def save_json(summary, video, target_date):
         'date_display': date_display,
         'video_id':    video['video_id'] if video else '',
         'video_title': video['title']    if video else f"한경 모닝루틴 {td.strftime('%Y-%m-%d')}",
-        'items':       [{'title': item['title'], 'content': item['content']}
+        'items':       [{'title': item['title'], 'content': item['content'], 'url': item.get('url', '')}
                         for item in summary['items']],
     }
 
@@ -240,7 +240,7 @@ def main():
     for title, url in articles:
         try:
             body = fetch_article(url)
-            articles_data.append((title, body))
+            articles_data.append((title, body, url))
             print(f'     ✓ {title[:40]}')
         except Exception as e:
             print(f'     ✗ {title[:40]} — {e}')
