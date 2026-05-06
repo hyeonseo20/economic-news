@@ -140,6 +140,50 @@
       margin-left: 3px;
     }
 
+    /* 오늘의 기사 목록 */
+    .article-index {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .article-index-header {
+      padding: 10px 16px 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #00C896;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .article-index-list {
+      list-style: none;
+      padding: 4px 0;
+    }
+
+    .article-index-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 7px 16px;
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.4;
+    }
+
+    .article-index-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #00C896;
+      flex-shrink: 0;
+    }
+
+    .article-index-list a {
+      color: #8b949e;
+      text-decoration: none;
+    }
+
+    .article-index-list a:hover { color: #c9d1d9; }
+
     /* 뉴스 카운트 바 */
     .news-count-bar {
       background: #161b22;
@@ -438,6 +482,11 @@
       </div>
     </a>
 
+    <div class="article-index" id="article-index" style="display:none;">
+      <div class="article-index-header">오늘의 기사</div>
+      <ul class="article-index-list" id="article-index-list"></ul>
+    </div>
+
     <div class="news-count-bar" id="news-count-bar">로딩 중...</div>
     <div id="news-items"></div>
 
@@ -520,6 +569,16 @@
       } else {
         thumbLink.style.display = 'none';
       }
+
+      const indexEl = document.getElementById('article-index');
+      document.getElementById('article-index-list').innerHTML = data.items.map((item, i) => `
+        <li>
+          <span class="article-index-num">${String(i + 1).padStart(2, '0')}</span>
+          ${item.url
+            ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>`
+            : escapeHtml(item.title)}
+        </li>`).join('');
+      indexEl.style.display = '';
 
       document.getElementById('news-count-bar').textContent =
         `TOTAL ${data.items.length} ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다`;
