@@ -181,7 +181,14 @@ def summarize(articles_data):
                 match = re.search(r'\{.*\}', text, re.DOTALL)
                 if not match:
                     raise ValueError(f'JSON 파싱 실패: {text[:200]}')
-                content = json.loads(match.group()).get('content', '')
+                try:
+                    content = json.loads(match.group()).get('content', '')
+                except json.JSONDecodeError:
+                    # LLM이 따옴표를 이스케이프하지 않은 경우 직접 추출
+                    m2 = re.search(r'"content"\s*:\s*"(.*?)"\s*\}', match.group(), re.DOTALL)
+                    if not m2:
+                        raise ValueError(f'content 추출 실패: {text[:200]}')
+                    content = m2.group(1)
                 if not has_hallucination(content, body):
                     break
                 if attempt == MAX_RETRIES:
