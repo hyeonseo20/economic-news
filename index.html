@@ -184,17 +184,7 @@
 
     .article-index-list a:hover { color: #c9d1d9; }
 
-    /* 뉴스 카운트 바 */
-    .news-count-bar {
-      background: #161b22;
-      border-bottom: 1px solid #21262d;
-      padding: 7px 16px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      color: #8b949e;
-    }
-
-    /* 아코디언 */
+/* 아코디언 */
     .accordion-item { border-bottom: 1px solid #21262d; }
 
     .accordion-header {
@@ -487,7 +477,7 @@
       <ul class="article-index-list" id="article-index-list"></ul>
     </div>
 
-    <div class="news-count-bar" id="news-count-bar">로딩 중...</div>
+    <div class="article-index-header" style="border-bottom:1px solid #21262d; background:#161b22;">기사 내용 요약</div>
     <div id="news-items"></div>
 
   </div>
@@ -579,9 +569,6 @@
             : escapeHtml(item.title)}
         </li>`).join('');
       indexEl.style.display = '';
-
-      document.getElementById('news-count-bar').textContent =
-        `TOTAL ${data.items.length} ITEMS — 항목을 탭하면 상세 내용이 펼쳐집니다`;
 
       document.getElementById('news-items').innerHTML = data.items.map((item, i) => `
         <div class="accordion-item">
