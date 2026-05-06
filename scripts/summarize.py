@@ -117,7 +117,7 @@ def fetch_article(url):
         paras = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 30]
         body_text = ' '.join(paras)
 
-    return re.sub(r'\s+', ' ', body_text) or '본문 없음'
+    return re.sub(r'\s+', ' ', body_text)[:3000] or '본문 없음'
 
 
 def has_hallucination(content, body):
