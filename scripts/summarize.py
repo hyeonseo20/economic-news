@@ -107,14 +107,13 @@ def fetch_article(url):
     res  = requests.get(url, headers=HEADERS, timeout=15)
     soup = BeautifulSoup(res.text, 'html.parser')
 
-    body = (
-        soup.find('div', class_=re.compile(r'article-body|newsct_article|article_txt|articleText', re.I)) or
-        soup.find('div', class_=re.compile(r'article|content|body', re.I)) or
-        soup.find('article')
-    )
+    # 한경 기사 전용 선택자 우선 시도
+    body = soup.find('div', class_=re.compile(r'article-body|newsct_article|article_txt|articleText', re.I))
+
     if body:
         body_text = body.get_text(separator=' ', strip=True)
     else:
+        # fallback: 본문 p 태그 수집 (광고·사이드바 노이즈 최소화)
         paras = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 30]
         body_text = ' '.join(paras)
 
