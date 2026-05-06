@@ -129,6 +129,8 @@ def has_hallucination(content, body):
         return True
     if re.search(r'[؀-ۿ]', content):  # 아랍어: 항상 오류
         return True
+    if re.search(r'[àáâãèéêìíòóôõùúýăđơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]', content):  # 베트남어 특수문자: 항상 오류
+        return True
     for ch in re.findall(r'[一-鿿㐀-䶿]', content):  # 한자: 원문에 없으면 오류
         if ch not in body:
             return True
