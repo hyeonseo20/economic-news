@@ -1,9 +1,7 @@
 name: 한경 모닝루틴 자동 요약
 
 on:
-  schedule:
-    - cron: '0 0 * * 1-5'   # 매주 월~금 00:00 UTC = 09:00 KST
-  workflow_dispatch:          # 수동 실행 허용
+  workflow_dispatch:          # cron-job.org 및 수동 실행
     inputs:
       test_date:
         description: '테스트 날짜 (예: 20260430). 비우면 오늘 날짜 사용.'
