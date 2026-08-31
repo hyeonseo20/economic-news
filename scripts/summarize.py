@@ -62,9 +62,11 @@ def get_articles():
         page.goto('https://www.hankyung.com/mr', wait_until='domcontentloaded', timeout=30000)
 
         # 기본 노출은 최근 5개 날짜뿐이라, 그보다 오래된 날짜는 '더보기'를 펼쳐야 보임
-        more_button = page.get_by_role('button', name='더보기')
-        if more_button.count() > 0:
-            more_button.first.click()
+        # (같은 텍스트의 무관한 버튼이 더 있어 실제 날짜 드롭다운 토글을 클래스로 특정)
+        more_toggle = page.locator('.nav-dropdown__toggle.is-more')
+        if more_toggle.count() > 0:
+            more_toggle.first.click()
+            page.wait_for_timeout(500)  # 드롭다운 CSS 전환 대기
 
         # 날짜 버튼이 보일 때까지 대기
         page.wait_for_selector(f'text={date_label}', timeout=15000)
