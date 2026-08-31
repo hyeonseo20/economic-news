@@ -61,7 +61,12 @@ def get_articles():
         page = browser.new_page(user_agent=HEADERS['User-Agent'])
         page.goto('https://www.hankyung.com/mr', wait_until='domcontentloaded', timeout=30000)
 
-        # 날짜 버튼이 DOM에 나타날 때까지 대기
+        # 기본 노출은 최근 5개 날짜뿐이라, 그보다 오래된 날짜는 '더보기'를 펼쳐야 보임
+        more_button = page.get_by_role('button', name='더보기')
+        if more_button.count() > 0:
+            more_button.first.click()
+
+        # 날짜 버튼이 보일 때까지 대기
         page.wait_for_selector(f'text={date_label}', timeout=15000)
         page.get_by_text(date_label, exact=True).first.click()
 
