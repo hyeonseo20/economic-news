@@ -174,8 +174,11 @@ def summarize(articles_data):
                     print(f'       재시도 {attempt}/{MAX_RETRIES} (할루시네이션 감지)...')
                     time.sleep(15)
                 response = client.chat.completions.create(
-                    model='llama-3.3-70b-versatile',
-                    max_tokens=400,
+                    model='openai/gpt-oss-120b',
+                    max_completion_tokens=800,
+                    reasoning_effort='low',
+                    include_reasoning=False,
+                    response_format={'type': 'json_object'},
                     messages=[{'role': 'user', 'content': prompt}]
                 )
                 text  = response.choices[0].message.content.strip()
